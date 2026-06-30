@@ -1587,6 +1587,30 @@ class _HomeScreenState extends State<HomeScreen>
                           img: "$rootImageDir/pin.webp",
                           name: storedLanguage['Reset Pin'] ?? 'Reset Pin',
                         ),
+                        buildTile(
+                          context,
+                          onTap: () {
+                            Get.toNamed(RoutesName.profileSettingScreen);
+                          },
+                          img: "$rootImageDir/person.webp",
+                          name: storedLanguage['Profile'] ?? 'Profile',
+                        ),
+                        buildTile(
+                          context,
+                          onTap: () {
+                            Get.toNamed(RoutesName.supportTicketListScreen);
+                          },
+                          img: "$rootImageDir/support.webp",
+                          name: storedLanguage['Support Tickets'] ?? 'Support Tickets',
+                        ),
+                        buildTile(
+                          context,
+                          onTap: () {
+                            Get.toNamed(RoutesName.notificationScreen);
+                          },
+                          img: "$rootImageDir/notification.webp",
+                          name: storedLanguage['Notifications'] ?? 'Notifications',
+                        ),
                         if (AppController.to.basicCtrlList.isNotEmpty &&
                             AppController.to.basicCtrlList[0].deposit
                                     .toString() ==

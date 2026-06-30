@@ -3,6 +3,7 @@
 ## [2.1.1+4] - 2026-06-30
 
 ### Added
+- Added Profile, Support Tickets, and Notifications menu items to the left sidebar (drawer).
 - Enabled 16KB memory page size support for Android 15 compatibility.
 
 ### Changed
