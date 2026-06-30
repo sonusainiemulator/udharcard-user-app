@@ -1,0 +1,65 @@
+
+export 'package:get/get.dart';
+export '../views/screens/auth/login_screen.dart';
+export '../views/screens/auth/sign_up_screen.dart';
+export '../views/screens/auth/otp_screen.dart';
+export '../views/screens/bottom_nav/bottom_nav_bar.dart';
+export '../views/screens/notification/notification_screen.dart';
+export '../views/screens/onbording/onbording_screen.dart';
+export '../views/screens/profile/change_password_screen.dart';
+export '../views/screens/profile/edit_profile_screen.dart';
+export '../views/screens/profile/profile_setting_screen.dart';
+export '../views/screens/splash/splash_screen.dart';
+export '../views/screens/support_ticket/create_support_ticket_screen.dart';
+export '../views/screens/support_ticket/support_ticket_list_screen.dart';
+export '../views/screens/support_ticket/support_ticket_view_screen.dart';
+export '../views/screens/verification/two_fa_verification_screen.dart';
+export '../views/screens/auth/create_new_pass_screen.dart';
+export '../views/screens/auth/forgot_pass_screen.dart';
+export '../views/screens/verification/identity_verification_screen.dart';
+export '../views/screens/success/payment_success_screen.dart';
+export '../views/screens/deposit/deposit_screen.dart';
+export '../views/screens/deposit/deposit_history_screen.dart';
+export '../views/screens/card/virtual_card_screen.dart';
+export '../views/screens/card/virtual_card_form_screen.dart';
+
+export '../views/screens/home/home_screen.dart';
+export '../views/screens/notification/notification_permission_screen.dart';
+export '../views/screens/withdraw/flutter_wave_withdraw_screen.dart';
+export '../views/screens/deposit/manual_payment_screen.dart';
+export '../views/screens/withdraw/withdraw_history_screen.dart';
+export '../views/screens/withdraw/withdraw_screen.dart';
+export '../views/screens/withdraw/withdraw_preview_screen.dart';
+
+export '../views/screens/transaction/transaction_screen.dart';
+export '../views/screens/card/card_transaction_screen.dart';
+
+export '../views/screens/send_money/send_money_screen.dart';
+export '../views/screens/escrow/escrow_screen.dart';
+export '../views/screens/exchange/exchange_money_screen.dart';
+export '../views/screens/invoice/invoice_download_preview_screen.dart';
+export '../views/screens/invoice/invoice_screen.dart';
+export '../views/screens/invoice/invoice_view_screen.dart';
+export '../views/screens/pay_bill/pay_bill_preview_screen.dart';
+export '../views/screens/pay_bill/pay_bill_screen.dart';
+export '../views/screens/qr_payment/qr_payment_screen.dart';
+export '../views/screens/redeem/redeem_preview_screen.dart';
+export '../views/screens/redeem/insert_redeem_code_screen.dart';
+export '../views/screens/redeem/redeem_screen.dart';
+export '../views/screens/voucher/voucher_screen.dart';
+
+export '../views/screens/dispute/dispute_history_screen.dart';
+export '../views/screens/escrow/escrow_history_screen.dart';
+export '../views/screens/escrow/escrow_preview_screen.dart';
+export '../views/screens/exchange/exchange_money_preview_screen.dart';
+export '../views/screens/request_money/request_money_screen.dart';
+export '../views/screens/voucher/voucher_history_screen.dart';
+export '../views/screens/voucher/voucher_preview_screen.dart';
+export '../views/screens/send_money/send_money_preview_screen.dart';
+export '../views/screens/request_money/request_money_preview_confirm_screen.dart';
+export '../views/screens/request_money/request_money_preview_screen.dart';
+export 'package:paysecure/views/screens/qr_payment/qr_code_screen.dart';
+export '../views/screens/delete_account/delete_account_screen.dart';
+export '../views/screens/deposit/deposit_preview_screen.dart';
+export '../views/screens/pay_bill/bill_category_screen.dart';
+export '../views/screens/verification/verification_list_screen.dart';

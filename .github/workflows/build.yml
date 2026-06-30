@@ -1,0 +1,44 @@
+name: Flutter Build with Dynamic Version
+
+on:
+  push:
+    branches:
+      - main  # Change this to your desired branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.16.0"
+
+      - name: Fetch Version from API
+        id: fetch_version
+        run: |
+          VERSION_DATA=$(curl -s "https://yourapi.com/app/version")
+          VERSION_NAME=$(echo $VERSION_DATA | jq -r '.message.version')
+          BUILD_NUMBER=$(echo $VERSION_INFO | jq -r '.message.appBuild' | cut -d',' -f1) # Taking the first build number
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+
+      - name: Update pubspec.yaml with Version
+        run: |
+          sed -i "s/^version: .*/version: $VERSION_NAME+$BUILD_NUMBER/" pubspec.yaml
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
