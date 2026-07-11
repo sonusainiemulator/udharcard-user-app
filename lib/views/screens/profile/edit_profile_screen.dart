@@ -187,6 +187,7 @@ class EditProfileScreen extends StatelessWidget {
                                           width: 1),
                                     ),
                                     child: CountryCodePicker(
+                                      enabled: false,
                                       padding: EdgeInsets.zero,
                                       dialogBackgroundColor:
                                           AppThemes.getDarkCardColor(),
@@ -202,8 +203,7 @@ class EditProfileScreen extends StatelessWidget {
                                         profileController.countryName =
                                             countryCode.name!;
                                       },
-                                      initialSelection:
-                                          '${profileController.countryCode}',
+                                      initialSelection: 'IN',
                                       showCountryOnly: false,
                                       showOnlyCountryWhenClosed: false,
                                       alignLeft: false,

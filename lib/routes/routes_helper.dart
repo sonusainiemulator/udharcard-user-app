@@ -11,6 +11,8 @@ import '../views/screens/pay_bill/pay_bill_history_screen.dart';
 import '../views/screens/redeem/redeem_history_screen.dart';
 import '../views/screens/invoice/invoice_history_screen.dart';
 import 'package:paysecure/routes/page_index.dart';
+import '../views/screens/customer_udhar/customer_udhar_merchants_screen.dart';
+import '../views/screens/customer_udhar/customer_udhar_ledger_screen.dart';
 
 class RouteHelper {
   static List<GetPage> routes() => [
@@ -195,5 +197,11 @@ class RouteHelper {
         GetPage(
             name: RoutesName.deleteAccountScreen,
             page: () => DeleteAccountScreen()),
+        GetPage(
+            name: RoutesName.customerUdharMerchantsScreen,
+            page: () => const CustomerUdharMerchantsScreen()),
+        GetPage(
+            name: RoutesName.customerUdharLedgerScreen,
+            page: () => const CustomerUdharLedgerScreen()),
       ];
 }

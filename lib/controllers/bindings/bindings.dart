@@ -79,5 +79,7 @@ class InitBindings implements Bindings {
         fenix: true);
     Get.lazyPut<PinResetController>(() => PinResetController(),
         fenix: true);
+    Get.lazyPut<CustomerUdharController>(() => CustomerUdharController(),
+        fenix: true);
   }
 }

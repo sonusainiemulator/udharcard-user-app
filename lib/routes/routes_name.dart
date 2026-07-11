@@ -75,4 +75,7 @@ class RoutesName {
   static String securityPinSetupScreen = "/securityPinSetupScreen";
 
   static String deleteAccountScreen = "/deleteAccountScreen";
+
+  static String customerUdharMerchantsScreen = "/customerUdharMerchantsScreen";
+  static String customerUdharLedgerScreen = "/customerUdharLedgerScreen";
 }

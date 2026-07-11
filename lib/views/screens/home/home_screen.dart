@@ -19,9 +19,7 @@ import '../../widgets/appDialog.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/spacing.dart';
 import '../transaction/transaction_screen.dart';
-import '../mobile_scanner/mobile_scanner_screen.dart';
 import '../qr_payment/deposit_qr_screen.dart';
-import '../qr_payment/qr_code_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -861,7 +859,7 @@ class _HomeScreenState extends State<HomeScreen>
     final double usedRatio = (balanceVal / creditLimit).clamp(0.0, 1.0);
 
     return GestureDetector(
-      onTap: () => Get.toNamed(RoutesName.qrCodeScreen),
+      onTap: () => Get.toNamed(RoutesName.customerUdharMerchantsScreen),
       child: Container(
         width: double.infinity,
         height: 200.h,

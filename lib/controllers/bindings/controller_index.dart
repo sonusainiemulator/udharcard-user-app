@@ -26,3 +26,4 @@ export '../dispute_history_controller.dart';
 export '../exchange_history_controller.dart';
 export '../request_history_controller.dart';
 export '../send_money_history_controller.dart';
+export '../customer_udhar_controller.dart';

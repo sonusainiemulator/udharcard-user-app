@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.2+5] - 2026-07-11
+
+### Added
+- Added merchant-wise Udhar cards.
+- Added ledger transaction history.
+
 ## [2.1.1+4] - 2026-06-30
 
 ### Added

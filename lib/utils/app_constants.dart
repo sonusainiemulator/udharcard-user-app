@@ -160,6 +160,11 @@ class AppConstants {
 
   static const String checkRecipient = "/transfer/check-recipient";
 
+  //----CUSTOMER UDHAR
+  static const String customerUdharMerchantsUrl = "/customer/udhar/merchants";
+  static const String customerUdharLedgerUrl = "/customer/udhar/ledger";
+  static const String customerUdharVerifyUrl = "/customer/udhar/ledger/verify";
+
   static const String baisicCtrl = "/basic";
   static const String deleteAccount = "/delete-account";
 }
