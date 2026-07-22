@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
-import 'package:local_session_timeout/local_session_timeout.dart';
 import 'package:paysecure/utils/services/custom_error.dart';
 import 'controllers/app_controller.dart';
 import 'controllers/bindings/bindings.dart';
@@ -18,11 +18,17 @@ import 'utils/app_constants.dart';
 import 'utils/services/helpers.dart';
 import 'utils/services/localstorage/hive.dart';
 import 'utils/services/localstorage/init_hive.dart';
-import 'utils/services/localstorage/keys.dart';
-import 'views/widgets/timeout_dialog.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint("Firebase initialization failed: $e");
+  }
   try {
     await dotenv.load(fileName: ".env");
   } catch (e, s) {
@@ -71,56 +77,34 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         return kDebugMode
             ? ErrorWidget(errorDetails.exception)
             : Center(
-              child: Image.asset(
-                '$rootImageDir/404.webp',
-                height: 120.h,
-                width: double.maxFinite,
-                fit: BoxFit.cover,
-              ),
-            );
+                child: Image.asset(
+                  '$rootImageDir/404.webp',
+                  height: 120.h,
+                  width: double.maxFinite,
+                  fit: BoxFit.cover,
+                ),
+              );
       }
     };
 
-    final sessionConfig = SessionConfig(
-      invalidateSessionForAppLostFocus: const Duration(minutes: 5),
-      invalidateSessionForUserInactivity: const Duration(minutes: 5),
-    );
-
-    sessionConfig.stream.listen((SessionTimeoutState timeoutEvent) {
-      if (timeoutEvent == SessionTimeoutState.userInactivityTimeout ||
-          timeoutEvent == SessionTimeoutState.appFocusTimeout) {
-        // handle user inactive timeout
-        Helpers.showSnackBar(msg: "Your session has timed out!");
-        HiveHelp.remove(Keys.token);
-        Get.offNamedUntil(
-          RoutesName.loginScreen,
-          (route) =>
-              (route as GetPageRoute).routeName == RoutesName.loginScreen,
-        );
-        Get.dialog(Timeout());
-      }
-    });
     return ScreenUtilInit(
       designSize: const Size(430, 932),
       minTextAdapt: true,
       splitScreenMode: true,
       useInheritedMediaQuery: true,
       builder: (context, child) {
-        return SessionTimeoutManager(
-          sessionConfig: sessionConfig,
-          child: GetMaterialApp(
-            title: AppConstants.appName,
-            debugShowCheckedModeBanner: false,
-            theme: AppThemes.lightTheme,
-            darkTheme: AppThemes.darkTheme,
-            initialBinding: InitBindings(),
-            themeMode: Get.put(AppController()).themeManager(),
-            initialRoute: RoutesName.INITIAL,
-            getPages: RouteHelper.routes(),
-            builder: (BuildContext context, Widget? widget) {
-              return widget ?? Container(child: Text("Widget is null"));
-            },
-          ),
+        return GetMaterialApp(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          theme: AppThemes.lightTheme,
+          darkTheme: AppThemes.darkTheme,
+          initialBinding: InitBindings(),
+          themeMode: Get.put(AppController()).themeManager(),
+          initialRoute: RoutesName.INITIAL,
+          getPages: RouteHelper.routes(),
+          builder: (BuildContext context, Widget? widget) {
+            return widget ?? Container(child: Text("Widget is null"));
+          },
         );
       },
     );

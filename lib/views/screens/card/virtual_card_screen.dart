@@ -661,14 +661,9 @@ class VirtualCardScreen extends StatelessWidget {
                                 InkWell(
                                   borderRadius: Dimensions.kBorderRadius * 2,
                                   onTap: () {
-                                    if (cardCtrl.orderLock == "true") {
-                                      cardCtrl.getCardOrder();
-                                    } else {
-                                      cardCtrl.getCardOrder();
-                                      Get.toNamed(
-                                        RoutesName.virtualCardFormScreen,
-                                      );
-                                    }
+                                    Helpers.showSnackBar(
+                                      msg: "This feature is coming soon!",
+                                    );
                                   },
                                   child: Ink(
                                     width: double.maxFinite,
@@ -728,8 +723,8 @@ class VirtualCardScreen extends StatelessWidget {
                                           ),
                                         Spacer(),
                                         Text(
-                                          storedLanguage['Request For Get A Virtual Card'] ??
-                                              "Request For Get A Virtual Card",
+                                          storedLanguage['Coming Soon'] ??
+                                              "Coming Soon (Temporarily Disabled)",
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: context.t.bodyLarge?.copyWith(

@@ -11,6 +11,7 @@ import '../data/repositories/notification_repo.dart';
 import '../routes/routes_name.dart';
 import '../utils/services/localstorage/hive.dart';
 import '../utils/services/localstorage/keys.dart';
+import 'package:paysecure/controllers/customer_udhar_controller.dart';
 import 'notification_service.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -73,8 +74,43 @@ class PushNotificationController extends GetxController {
       print("onEvent: ${event.data}");
     }
     // Parse the JSON response
-    Map<String, dynamic> eventData = json.decode(event.data);
-    Map<String, dynamic> message = eventData['message'];
+    Map<String, dynamic> eventData = {};
+    if (event.data is String) {
+      try {
+        eventData = json.decode(event.data);
+      } catch (e) {
+        if (kDebugMode) print("Error decoding event.data: $e");
+        return;
+      }
+    } else if (event.data is Map) {
+      eventData = Map<String, dynamic>.from(event.data as Map);
+    } else {
+      return;
+    }
+
+    if (!eventData.containsKey('message') || eventData['message'] == null) {
+      return;
+    }
+
+    var rawMessage = eventData['message'];
+    Map<String, dynamic> message = {};
+    if (rawMessage is String) {
+      try {
+        message = json.decode(rawMessage);
+      } catch (e) {
+        if (kDebugMode) print("Error decoding message: $e");
+        return;
+      }
+    } else if (rawMessage is Map) {
+      message = Map<String, dynamic>.from(rawMessage as Map);
+    } else {
+      return;
+    }
+
+    if (!message.containsKey('description') || message['description'] == null || message['description']['text'] == null) {
+      return;
+    }
+
     String text =
         message['description']['text'].toString().replaceAll("\n", " ");
     String formattedDate = DateFormat.yMMMMd().add_jm().format(DateTime.now());
@@ -138,6 +174,18 @@ class PushNotificationController extends GetxController {
     HiveHelp.write(data['message']['channel'], notificationList);
     HiveHelp.write(Keys.isNotificationSeen, false);
     isSeen.value = HiveHelp.read(Keys.isNotificationSeen);
+
+    // Realtime Udhar Sync Trigger
+    if (Get.isRegistered<CustomerUdharController>()) {
+      final customerUdharCtrl = Get.find<CustomerUdharController>();
+      customerUdharCtrl.getMerchantsList();
+      if (customerUdharCtrl.activeMerchantId != 0) {
+        customerUdharCtrl.getLedgerList(
+          merchantId: customerUdharCtrl.activeMerchantId,
+          page: 1,
+        );
+      }
+    }
 
     update();
   }

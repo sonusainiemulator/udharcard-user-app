@@ -13,6 +13,7 @@ import '../../../utils/services/helpers.dart';
 import '../../../utils/services/localstorage/keys.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/spacing.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,17 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
     TextTheme t = Theme.of(context).textTheme;
     //--------------REMEMBER ME----------------
     if (HiveHelp.read(Keys.userName) != null &&
-        HiveHelp.read(Keys.userPass) != null &&
         HiveHelp.read(Keys.isRemember) != null) {
       if (HiveHelp.read(Keys.isRemember) == true) {
-        controller.userNameEditingController.text = HiveHelp.read(
-          Keys.userName,
-        );
-        controller.signInPassEditingController.text = HiveHelp.read(
-          Keys.userPass,
-        );
-        controller.userNameVal = HiveHelp.read(Keys.userName);
-        controller.singInPassVal = HiveHelp.read(Keys.userPass);
+        if (controller.phoneController.text.isEmpty) {
+          controller.phoneController.text = HiveHelp.read(Keys.userName);
+        }
       }
     }
     if (HiveHelp.read(Keys.isRemember) != null) {
@@ -105,122 +100,184 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         VSpace(40.h),
-                        CustomTextField(
-                          hintext:
-                              storedLanguage['Username or Email'] ??
-                              "Username or Email",
-                          isPrefixIcon: true,
-                          prefixIcon: 'person',
-                          controller: controller.userNameEditingController,
-                          onChanged: (v) {
-                            controller.userNameVal = v;
-                            controller.update();
-                          },
-                        ),
-                        VSpace(32.h),
-                        CustomTextField(
-                          hintext: storedLanguage['Password'] ?? "Password",
-                          isPrefixIcon: true,
-                          isSuffixIcon: true,
-                          obsCureText: controller.isNewPassShow ? true : false,
-                          prefixIcon: 'lock',
-                          suffixIcon:
-                              controller.isNewPassShow ? 'hide' : 'show',
-                          controller: controller.signInPassEditingController,
-                          onChanged: (v) {
-                            controller.singInPassVal = v;
-                            controller.update();
-                          },
-                          onSuffixPressed: () {
-                            controller.isNewPassShow =
-                                !controller.isNewPassShow;
-                            controller.update();
-                          },
-                        ),
-                        VSpace(24.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Transform.scale(
-                                  scale: .82,
-                                  child: Checkbox(
-                                    checkColor: AppColors.whiteColor,
-                                    activeColor: AppColors.mainColor,
-                                    visualDensity: const VisualDensity(
-                                      horizontal:
-                                          -4.0, // Adjust the horizontal padding
-                                      vertical:
-                                          -4.0, // Adjust the vertical padding
-                                    ),
-                                    side: BorderSide(
-                                      color: AppThemes.getHintColor(),
-                                    ),
-                                    value: controller.isRemember,
-                                    onChanged: (v) {
-                                      controller.isRemember = v!;
-                                      HiveHelp.write(Keys.isRemember, v);
-                                      controller.update();
-                                    },
+                        if (!controller.isOtpSent) ...[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: Dimensions.textFieldHeight,
+                                decoration: BoxDecoration(
+                                  borderRadius: Dimensions.kBorderRadius,
+                                  border: Border.all(
+                                    color: AppThemes.getSliderInactiveColor(),
+                                    width: 1,
                                   ),
                                 ),
-                                HSpace(5.w),
-                                Text(
-                                  storedLanguage['Remember me'] ??
-                                      "Remember me",
-                                  style: t.bodySmall?.copyWith(
+                                child: CountryCodePicker(
+                                  enabled: true,
+                                  padding: EdgeInsets.zero,
+                                  dialogBackgroundColor:
+                                      AppThemes.getDarkCardColor(),
+                                  dialogTextStyle: t.bodyMedium?.copyWith(
                                     fontSize: 16.sp,
-                                    color:
-                                        Get.isDarkMode
-                                            ? AppColors.whiteColor
-                                            : AppColors.black30,
-                                    fontWeight: FontWeight.w400,
                                   ),
+                                  flagWidth: 29.w,
+                                  textStyle: t.displayMedium,
+                                  onChanged: (CountryCode countryCode) {
+                                    controller.countryCode = countryCode.code!;
+                                    controller.phoneCode = countryCode.dialCode!;
+                                    controller.countryName = countryCode.name!;
+                                    controller.update();
+                                  },
+                                  initialSelection: controller.countryCode,
+                                  showCountryOnly: false,
+                                  showOnlyCountryWhenClosed: false,
+                                  alignLeft: false,
                                 ),
-                              ],
-                            ),
-                            InkWell(
-                              onTap: () {
-                                Get.toNamed(RoutesName.forgotPassScreen);
-                              },
-                              child: Container(
-                                padding: EdgeInsets.symmetric(vertical: 8.h),
-                                child: Text(
-                                  storedLanguage['Forgot Your Password?'] ??
-                                      "Forgot Your Password?",
-                                  style: t.displayMedium?.copyWith(
-                                    color: AppColors.mainColor,
-                                    fontSize: 18.sp,
+                              ),
+                              HSpace(16.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  hintext:
+                                      storedLanguage['Phone Number'] ??
+                                      "Phone Number",
+                                  isPrefixIcon: true,
+                                  prefixIcon: 'call',
+                                  keyboardType: TextInputType.phone,
+                                  controller: controller.phoneController,
+                                  onChanged: (v) {
+                                    controller.update();
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          VSpace(24.h),
+                          Row(
+                            children: [
+                              Transform.scale(
+                                scale: .82,
+                                child: Checkbox(
+                                  checkColor: AppColors.whiteColor,
+                                  activeColor: AppColors.mainColor,
+                                  visualDensity: const VisualDensity(
+                                    horizontal: -4.0,
+                                    vertical: -4.0,
                                   ),
+                                  side: BorderSide(
+                                    color: AppThemes.getHintColor(),
+                                  ),
+                                  value: controller.isRemember,
+                                  onChanged: (v) {
+                                    controller.isRemember = v!;
+                                    HiveHelp.write(Keys.isRemember, v);
+                                    if (v) {
+                                      HiveHelp.write(Keys.userName, controller.phoneController.text);
+                                    } else {
+                                      HiveHelp.remove(Keys.userName);
+                                    }
+                                    controller.update();
+                                  },
+                                ),
+                              ),
+                              HSpace(5.w),
+                              Text(
+                                storedLanguage['Remember me'] ?? "Remember me",
+                                style: t.bodySmall?.copyWith(
+                                  fontSize: 16.sp,
+                                  color: Get.isDarkMode
+                                      ? AppColors.whiteColor
+                                      : AppColors.black30,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                          VSpace(48.h),
+                          Material(
+                            color: Colors.transparent,
+                            child: AppButton(
+                              text: storedLanguage['Send OTP'] ?? "Send OTP",
+                              isLoading: controller.isLoading ? true : false,
+                              bgColor: controller.phoneController.text.isEmpty
+                                  ? AppThemes.getInactiveColor()
+                                  : AppColors.mainColor,
+                              onTap: controller.phoneController.text.isEmpty
+                                  ? null
+                                  : controller.isLoading
+                                  ? null
+                                  : () async {
+                                      Helpers.hideKeyboard();
+                                      if (controller.isRemember) {
+                                        HiveHelp.write(Keys.userName, controller.phoneController.text);
+                                      }
+                                      String fullPhone = "${controller.phoneCode}${controller.phoneController.text.trim()}";
+                                      await controller.sendOtp(fullPhone);
+                                    },
+                            ),
+                          ),
+                        ] else ...[
+                          Text(
+                            "${storedLanguage['Verification code sent to'] ?? 'Verification code sent to'} ${controller.phoneCode} ${controller.phoneController.text}",
+                            style: t.displayMedium?.copyWith(
+                              color: AppColors.mainColor,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 18.sp,
+                            ),
+                          ),
+                          VSpace(32.h),
+                          CustomTextField(
+                            hintext: storedLanguage['6-Digit OTP'] ?? "6-Digit OTP",
+                            isPrefixIcon: true,
+                            prefixIcon: 'lock',
+                            keyboardType: TextInputType.number,
+                            controller: controller.otpController,
+                            onChanged: (v) {
+                              controller.update();
+                            },
+                          ),
+                          VSpace(48.h),
+                          Material(
+                            color: Colors.transparent,
+                            child: AppButton(
+                              text: storedLanguage['Verify & Login'] ?? "Verify & Login",
+                              isLoading: controller.isLoading ? true : false,
+                              bgColor: controller.otpController.text.length < 6
+                                  ? AppThemes.getInactiveColor()
+                                  : AppColors.mainColor,
+                              onTap: controller.otpController.text.length < 6
+                                  ? null
+                                  : controller.isLoading
+                                  ? null
+                                  : () async {
+                                      Helpers.hideKeyboard();
+                                      String fullPhone = "${controller.phoneCode}${controller.phoneController.text.trim()}";
+                                      await controller.verifyOtpAndLogin(
+                                        controller.otpController.text.trim(),
+                                        fullPhone,
+                                      );
+                                    },
+                            ),
+                          ),
+                          VSpace(20.h),
+                          Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: () {
+                                controller.isOtpSent = false;
+                                controller.otpController.clear();
+                                controller.update();
+                              },
+                              child: Text(
+                                storedLanguage['Change Phone Number'] ??
+                                    "Change Phone Number",
+                                style: t.bodyMedium?.copyWith(
+                                  color: AppThemes.getHintColor(),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                        VSpace(48.h),
-                        Material(
-                          color: Colors.transparent,
-                          child: AppButton(
-                            text: storedLanguage['Log In'] ?? "Log In",
-                            isLoading: controller.isLoading ? true : false,
-                            bgColor:
-                                controller.userNameVal.isEmpty ||
-                                        controller.singInPassVal.isEmpty
-                                    ? AppThemes.getInactiveColor()
-                                    : AppColors.mainColor,
-                            onTap:
-                                controller.userNameVal.isEmpty ||
-                                        controller.singInPassVal.isEmpty
-                                    ? null
-                                    : controller.isLoading
-                                    ? null
-                                    : () async {
-                                      Helpers.hideKeyboard();
-                                      await controller.login();
-                                    },
                           ),
-                        ),
+                        ],
                         VSpace(118.h),
                         Align(
                           alignment: Alignment.center,

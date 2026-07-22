@@ -1,5 +1,74 @@
 # Changelog
 
+## [2.1.5+8] - 2026-07-22
+
+### Fixed
+- **Bottom Navigation Bar Safe Area**: Fixed bottom menu tab rendering and clipping issues across all device screen aspect ratios by integrating `SafeArea` wrapping on the main bottom navigation screen.
+
+## [2.1.4+7] - 2026-07-21
+
+### Added
+- Added dynamic color-coded balance to the Udharcard Passbook (Green for positive/advance balance, Red for negative/owing balance).
+- Redesigned the Virtual Card component on the home screen to act as an "Udharcard Passbook" portal.
+- Added walkthrough text instructing users to tap the passbook to view their merchant-wise assigned virtual cards list.
+
+### Changed
+- Simplified the bottom navigation bar to statically display 4 core screens for Udharcard Customers.
+- Temporarily disabled the "Request Virtual Card" feature from the Virtual Card Screen and added a "Coming Soon" label.
+
+### Removed
+- Removed the "Recent Activity" and QR Code features from the Home Screen for a more lightweight experience.
+- Removed the "You will get" and "You will give" statistics cards from the bottom of the home screen.
+- Removed the unused `_ChipPainter` to clean up the codebase.
+
+### Fixed
+- Fixed a race condition bug where navigating to the Virtual Card Request Form happened before the form data was fully fetched from the backend.
+
+## [2.1.3+6] - 2026-07-19
+
+### Added
+- **Firebase Phone Authentication**: Replaced username/password login with mobile OTP verification using Firebase Auth. Users can log in and register using their phone number with a 6-digit OTP.
+- **Persistent Login Session**: Removed session timeout logic (`SessionTimeoutManager`) — users stay logged in indefinitely after first authentication.
+- **Hindi Audio Notification (Planned)**: Infrastructure added for Hindi TTS audio alerts on Udhar credit/debit notifications with user-controlled enable/disable and Male/Female voice selection.
+
+### Fixed
+- **Post-Login ANR Freeze**: Resolved "Udharcard isn't responding" freeze after login. Moved all heavy initializations (Pusher connect, Profile API, Dashboard API) out of the synchronous UI thread into `addPostFrameCallback` with staggered `Future.microtask` + `Future.delayed` sequencing.
+- **Home Screen Performance**: Moved `Get.put(TransactionController())` and `Get.delete<CardController>()` from `build()` into `initState()` to prevent redundant re-initialization on every widget rebuild.
+- **Notification Controller Import**: Fixed broken relative import path for `CustomerUdharController` in `notification_controller.dart`.
+
+### Changed
+- **Gradle**: Upgraded from `8.10.2` → `8.14.1`
+- **Android Gradle Plugin (AGP)**: Upgraded from `8.6.0` → `8.11.1`
+- **Kotlin**: Upgraded from `2.0.20` → `2.2.0`
+- **google-services**: Upgraded from `4.4.2` → `4.4.3`
+- **targetSdkVersion**: Bumped from `35` → `36`
+- **desugar_jdk_libs**: Upgraded from `2.1.4` → `2.1.5`
+- **androidx.window**: Upgraded from `1.0.0` → `1.3.0`
+- **108 Flutter/Dart packages upgraded** to latest compatible versions including:
+  - `flutter_tts` 3.8.3 → 4.2.5
+  - `flutter_stripe` 11.5.0 → 13.1.0
+  - `stripe_android` override 11.0.0 → 13.1.0
+  - `connectivity_plus` 5.0.2 → 7.3.0
+  - `flutter_local_notifications` 19.4.0 → 22.1.0
+  - `pusher_channels_flutter` 2.2.0 → 2.6.0
+  - `get` 4.7.2 → 4.7.3
+  - `http` 1.4.0 → 1.6.0
+  - `dio` 5.8.0+1 → 5.10.0
+  - `webview_flutter` 4.13.0 → 4.14.1
+  - `mobile_scanner` 7.0.1 → 7.3.0
+  - `package_info_plus` 8.3.0 → 10.2.1
+  - `image_picker` 1.1.2 → 1.2.3
+  - `razorpay_flutter` 1.4.0 → 1.4.5
+  - `open_file` 3.5.10 → 4.0.0
+  - `lottie` 3.3.1 → 3.5.1
+  - `intl` 0.20.2 → 0.20.3
+  - `flutter_lints` 2.0.0 → 5.0.0
+
+### Removed
+- `local_session_timeout` package removed (no longer needed — persistent login enabled).
+
+
+
 ## [2.1.2+5] - 2026-07-11
 
 ### Added

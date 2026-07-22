@@ -20,10 +20,36 @@ class CustomerUdharController extends GetxController {
 
   List<dynamic> merchantsList = [];
   List<dynamic> ledgerList = [];
+  List<dynamic> filteredLedgerList = [];
+  DateTimeRange? ledgerDateRange;
 
   double outstandingBalance = 0.0;
   double creditLimit = 0.0;
   String? dueDate = '';
+
+  void setLedgerDateRange(DateTimeRange? range) {
+    ledgerDateRange = range;
+    _applyLedgerDateFilter();
+  }
+
+  void _applyLedgerDateFilter() {
+    if (ledgerDateRange == null) {
+      filteredLedgerList = List.from(ledgerList);
+    } else {
+      filteredLedgerList = ledgerList.where((tx) {
+        if (tx['created_at'] == null) return true;
+        try {
+          final DateTime txDate = DateTime.parse(tx['created_at'].toString());
+          final start = ledgerDateRange!.start;
+          final end = ledgerDateRange!.end.add(const Duration(days: 1)); // Include the end day fully
+          return txDate.isAfter(start) && txDate.isBefore(end);
+        } catch (_) {
+          return true;
+        }
+      }).toList();
+    }
+    update();
+  }
   Map<String, dynamic> merchantDetails = {};
 
   int activeMerchantId = 0;
@@ -91,7 +117,7 @@ class CustomerUdharController extends GetxController {
             } else {
               ledgerList.addAll(fetchedData);
             }
-            update();
+            _applyLedgerDateFilter();
           } else {
             hasNextPage = false;
             update();

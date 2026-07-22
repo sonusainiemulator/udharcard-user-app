@@ -6,14 +6,10 @@ class BottomNavController extends GetxController {
   static BottomNavController get to => Get.find<BottomNavController>();
   int selectedIndex = 0;
   List<Widget> get screens {
-    final basicCtrlList = AppController.to.basicCtrlList;
-    final hasVirtualCard = basicCtrlList.isNotEmpty && basicCtrlList[0].virtualCard.toString() == '1';
-    final hasExchange = basicCtrlList.isNotEmpty && basicCtrlList[0].exchange.toString() == '1';
-
     return [
       HomeScreen(),
-      hasVirtualCard ? VirtualCardScreen() : TransactionScreen(),
-      hasExchange ? ExchangeScreen() : DisputeHistoryScreen(),
+      VirtualCardScreen(),
+      TransactionScreen(),
       const ProfileSettingScreen(),
     ];
   }

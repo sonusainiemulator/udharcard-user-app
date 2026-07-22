@@ -1,4 +1,3 @@
-import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,7 +9,6 @@ import '../../config/styles.dart';
 import '../../themes/themes.dart';
 import '../../views/widgets/spacing.dart';
 import '../app_constants.dart';
-import 'package:cherry_toast/cherry_toast.dart' as cherry;
 
 class Helpers {
   static showToast({
@@ -40,7 +38,7 @@ class Helpers {
     Widget? messageText,
     Color? textColor,
     Color? bgColor,
-    Position? snackPosition = Position.top,
+    SnackPosition? snackPosition = SnackPosition.TOP,
   }) {
     if (_isToastVisible) {
       debugPrint("A toast is already visible. Skipping...");
@@ -54,69 +52,30 @@ class Helpers {
             title == 'Error' ||
             title == 'error');
 
-    final toast =
-        _isError
-            ? cherry.CherryToast.error(
-              animationCurve: Curves.fastLinearToSlowEaseIn,
-              shadowColor:
-                  Get.isDarkMode
-                      ? Colors.grey.shade800.withValues(alpha: 0.4)
-                      : Colors.grey.shade300,
-              borderRadius: 14.r,
-              titleDescriptionMargin: 5.h,
-              backgroundColor: AppThemes.getDarkCardColor(),
-              toastPosition: snackPosition ?? Position.top,
-              animationType: AnimationType.fromTop,
-              animationDuration: Duration(milliseconds: 1600),
-              title: Text(
-                title,
-                style: Theme.of(
-                  Get.context!,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.redColor),
-              ),
-              description: Text(
-                msg,
-                style: Theme.of(Get.context!).textTheme.bodySmall?.copyWith(
-                  color: AppThemes.getIconBlackColor(),
-                ),
-              ),
-
-              onToastClosed: () {
-                _isToastVisible = false;
-                debugPrint("Toast dismissed.");
-              },
-            )
-            : cherry.CherryToast.success(
-              animationCurve: Curves.linearToEaseOut,
-              shadowColor:
-                  Get.isDarkMode
-                      ? Colors.grey.shade800.withValues(alpha: 0.4)
-                      : Colors.grey.shade300,
-              borderRadius: 14.r,
-              titleDescriptionMargin: 5.h,
-              backgroundColor: AppThemes.getDarkCardColor(),
-              toastPosition: snackPosition ?? Position.top,
-              animationType: AnimationType.fromTop,
-              animationDuration: Duration(milliseconds: 1600),
-              title: Text(
-                title,
-                style: Theme.of(
-                  Get.context!,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.greenColor),
-              ),
-              description: Text(
-                msg,
-                style: Theme.of(Get.context!).textTheme.bodySmall?.copyWith(
-                  color: AppThemes.getIconBlackColor(),
-                ),
-              ),
-              onToastClosed: () {
-                _isToastVisible = false;
-                debugPrint("Toast dismissed.");
-              },
-            );
-
-    toast.show(Get.overlayContext!);
+    Get.snackbar(
+      title,
+      msg,
+      snackPosition: snackPosition ?? SnackPosition.TOP,
+      margin: EdgeInsets.zero,
+      borderRadius: 0,
+      backgroundColor: _isError ? AppColors.redColor : AppColors.greenColor,
+      colorText: Colors.white,
+      icon: Icon(
+        _isError ? Icons.error_outline : Icons.check_circle_outline,
+        color: Colors.white,
+      ),
+      isDismissible: true,
+      dismissDirection: DismissDirection.up,
+      forwardAnimationCurve: Curves.easeOut,
+      reverseAnimationCurve: Curves.easeIn,
+      animationDuration: const Duration(milliseconds: 300),
+      duration: Duration(seconds: durationTime ?? 3),
+      snackbarStatus: (status) {
+        if (status == SnackbarStatus.CLOSED) {
+          _isToastVisible = false;
+        }
+      },
+    );
   }
 
   /// hide keyboard automatically when click anywhere in screen

@@ -39,7 +39,8 @@ class LocalNotificationService {
 
     var initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-    await notificationsPlugin.initialize(initializationSettings,
+    await notificationsPlugin.initialize(
+        settings: initializationSettings,
         onDidReceiveNotificationResponse:
             (NotificationResponse notificationResponse) async {
       HiveHelp.write(Keys.isNotificationSeen, true);
@@ -58,5 +59,5 @@ class LocalNotificationService {
           {required int id,
           required String title,
           required String body}) async =>
-      notificationsPlugin.show(id, title, body, await notificationDetails());
+      notificationsPlugin.show(id: id, title: title, body: body, notificationDetails: await notificationDetails());
 }

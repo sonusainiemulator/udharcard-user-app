@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.1.2+5
+version: 2.1.5+8
 
 environment:
   sdk: '>=3.7.2 <5.0.0' # Flutter version 3.32.8 (channel stable)
@@ -36,14 +36,14 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   # state management
   get: ^4.7.2
-  fluttertoast: ^8.2.12
+  fluttertoast: ^9.1.0
   # local storage
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   # check internet connectivity
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^7.3.0
   # local notification
-  flutter_local_notifications: ^19.4.0
+  flutter_local_notifications: ^22.1.0
   # in-app notification
   pusher_channels_flutter: ^2.2.0
   # to responsive ui design
@@ -51,14 +51,14 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   lottie: ^3.3.1
-  file_picker: ^10.2.1
+  file_picker: ^12.0.0-beta.7
   image_picker: ^1.1.2
   country_code_picker: ^3.3.0
   intl: ^0.20.2
   dropdown_button2: ^2.3.9
   dotted_border: ^3.1.0
   dotted_line: ^3.2.3
-  flutter_dotenv: ^5.2.1
+  flutter_dotenv: ^6.0.1
   emoji_picker_flutter: ^4.3.0
   qr_flutter: ^4.1.0
   change_app_package_name: ^1.5.0
@@ -70,14 +70,13 @@ dependencies:
   webview_flutter: ^4.13.0
   cached_network_image: ^3.4.1
   dio: ^5.8.0+1
-  open_file: ^3.5.10
+  open_file: ^4.0.0
   photo_view: ^0.15.0
-  local_session_timeout: ^3.2.0
-  # Payment Gateway
-  flutter_stripe: ^11.5.0
-  razorpay_flutter: ^1.4.0
   url_launcher: ^6.3.2
   confetti: ^0.8.0
+  # Payment Gateway
+  flutter_stripe: ^13.1.0
+  razorpay_flutter: ^1.4.0
   animated_text_kit: ^4.2.3
   avatar_glow:
     git:
@@ -87,8 +86,10 @@ dependencies:
   logger: ^2.6.1
   mobile_scanner: ^7.0.1
   cherry_toast: ^1.13.0
-  package_info_plus: ^8.3.0
-  flutter_tts: 3.8.3
+  package_info_plus: ^10.2.1
+  flutter_tts: ^4.2.2
+  firebase_core: ^4.12.1
+  firebase_auth: ^6.5.6
 
 
   # flutter build apk --split-per-abi --build-name=2.0.0 --build-number=2
@@ -102,7 +103,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 dependency_overrides:
-  stripe_android: "11.0.0"
+  stripe_android: "13.1.0"
+  path_provider_android: "2.2.14"
 #change_app_icon
 #dart run flutter_launcher_icons:main
 flutter_launcher_icons:
@@ -118,7 +120,7 @@ flutter_launcher_icons:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

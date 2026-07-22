@@ -431,7 +431,9 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
                                         const NeverScrollableScrollPhysics(),
                                     itemCount: 8,
                                     itemBuilder: (context, i) {
-                                      return ListTile(
+                                      return Material(
+                                        color: Colors.transparent,
+                                        child: ListTile(
                                         contentPadding: EdgeInsets.zero,
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
@@ -587,6 +589,7 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
                                                     size: 16.h,
                                                   ),
                                                 ),
+                                      ),
                                       );
                                     },
                                   ),

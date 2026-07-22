@@ -26,16 +26,28 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
   final Connectivity appCtrlconnectivity = Connectivity();
   @override
   void initState() {
+    super.initState();
+    // Listen for connectivity changes (lightweight, safe on main thread)
     appCtrlconnectivity.onConnectivityChanged.listen(
       Get.find<AppController>().updateConnectionStatus,
     );
-    Get.put(PushNotificationController()).getPushNotificationConfig();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Get.put(ProfileController()).getProfile();
-      Get.put(AppController()).getDashboard();
-       Get.put(AppController()).getPackageInfo();
+    // Defer ALL heavy async work to after the first frame renders.
+    // This prevents the ANR "app not responding" freeze after login.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Step 1: Render the UI first, then start Pusher init
+      await Future.microtask(
+        () => Get.put(PushNotificationController()).getPushNotificationConfig(),
+      );
+      // Step 2: Small delay so Pusher connection doesn't race with API calls
+      await Future.delayed(const Duration(milliseconds: 300));
+      // Step 3: Load profile and dashboard in parallel (both are network calls)
+      await Future.wait([
+        Get.put(ProfileController()).getProfile(),
+        Get.put(AppController()).getDashboard(),
+      ]);
+      // Step 4: Package info is very lightweight, fetch last
+      Get.put(AppController()).getPackageInfo();
     });
-    super.initState();
   }
 
   @override
@@ -52,10 +64,10 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                     if (didPop) return;
                     return PopApp.onWillPop();
                   },
-                  child: Scaffold(
-                    body: controller.currentScreen,
-                    bottomNavigationBar: SafeArea(
-                      child: Container(
+                  child: SafeArea(
+                    child: Scaffold(
+                      body: controller.currentScreen,
+                      bottomNavigationBar: Container(
                         height: 84.h,
                         padding: EdgeInsets.only(
                           top: 33.h,
@@ -102,39 +114,13 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                                   bottom: 10.h,
                                 ),
                                 child: Image.asset(
-                                  appCtrl.basicCtrlList.isNotEmpty &&
-                                              appCtrl.basicCtrlList[0].exchange
-                                                      .toString() ==
-                                                  '0' ||
-                                          appCtrl.basicCtrlList.isNotEmpty &&
-                                              appCtrl
-                                                      .basicCtrlList[0]
-                                                      .virtualCard
-                                                      .toString() ==
-                                                  '0'
-                                      ? "$rootImageDir/home.webp"
-                                      : controller.selectedIndex == 0
+                                  controller.selectedIndex == 0
                                       ? "$rootImageDir/home1.webp"
                                       : "$rootImageDir/home.webp",
                                   height: 24.h,
-                                  color:
-                                      (appCtrl.basicCtrlList.isNotEmpty &&
-                                                      appCtrl
-                                                              .basicCtrlList[0]
-                                                              .exchange
-                                                              .toString() ==
-                                                          '0' ||
-                                                  appCtrl
-                                                          .basicCtrlList
-                                                          .isNotEmpty &&
-                                                      appCtrl
-                                                              .basicCtrlList[0]
-                                                              .virtualCard
-                                                              .toString() ==
-                                                          '0') &&
-                                              controller.selectedIndex == 0
-                                          ? AppColors.mainColor
-                                          : appCtrl.isDarkMode() == true
+                                  color: controller.selectedIndex == 0
+                                      ? AppColors.mainColor
+                                      : appCtrl.isDarkMode() == true
                                           ? AppColors.whiteColor
                                           : AppColors.blackColor,
                                   fit: BoxFit.cover,
@@ -146,41 +132,20 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                                 controller.changeScreen(1);
                               },
                               child: Container(
-                                padding:
-                                    appCtrl.basicCtrlList.isNotEmpty &&
-                                            appCtrl.basicCtrlList[0].transfer
-                                                    .toString() ==
-                                                '1'
-                                        ? EdgeInsets.only(
-                                          left: 10.w,
-                                          right: 60.w,
-                                          top: 10.h,
-                                          bottom: 10.h,
-                                        )
-                                        : EdgeInsets.zero,
+                                padding: EdgeInsets.only(
+                                  left: 10.w,
+                                  right: 60.w, // Space for center FAB
+                                  top: 10.h,
+                                  bottom: 10.h,
+                                ),
                                 child: Image.asset(
-                                  appCtrl.basicCtrlList.isNotEmpty &&
-                                          appCtrl.basicCtrlList[0].virtualCard
-                                                  .toString() ==
-                                              '1'
-                                      ? controller.selectedIndex == 1
-                                          ? "$rootImageDir/wallet1.webp"
-                                          : "$rootImageDir/wallet.webp"
-                                      : "$rootImageDir/transaction.webp",
-                                  height:
-                                      controller.selectedIndex == 1
-                                          ? 28.h
-                                          : 26.h,
-                                  color:
-                                      appCtrl.basicCtrlList.isNotEmpty &&
-                                              appCtrl
-                                                      .basicCtrlList[0]
-                                                      .virtualCard
-                                                      .toString() ==
-                                                  '0' &&
-                                              controller.selectedIndex == 1
-                                          ? AppColors.mainColor
-                                          : appCtrl.isDarkMode() == true
+                                  controller.selectedIndex == 1
+                                      ? "$rootImageDir/wallet1.webp"
+                                      : "$rootImageDir/wallet.webp",
+                                  height: controller.selectedIndex == 1 ? 28.h : 26.h,
+                                  color: controller.selectedIndex == 1
+                                      ? AppColors.mainColor
+                                      : appCtrl.isDarkMode() == true
                                           ? AppColors.whiteColor
                                           : AppColors.blackColor,
                                   fit: BoxFit.cover,
@@ -192,45 +157,21 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                                 controller.changeScreen(2);
                               },
                               child: Container(
-                                padding:
-                                    appCtrl.basicCtrlList.isNotEmpty &&
-                                            appCtrl.basicCtrlList[0].transfer
-                                                    .toString() ==
-                                                '1'
-                                        ? EdgeInsets.only(
-                                          right: 10.w,
-                                          left: 60.w,
-                                          top: 10.h,
-                                          bottom: 10.h,
-                                        )
-                                        : EdgeInsets.zero,
+                                padding: EdgeInsets.only(
+                                  right: 10.w,
+                                  left: 60.w, // Space for center FAB
+                                  top: 10.h,
+                                  bottom: 10.h,
+                                ),
                                 child: Image.asset(
-                                  appCtrl.basicCtrlList.isNotEmpty &&
-                                          appCtrl.basicCtrlList[0].exchange
-                                                  .toString() ==
-                                              '1'
-                                      ? controller.selectedIndex == 2
-                                          ? "$rootImageDir/exchange1.webp"
-                                          : "$rootImageDir/exchange.webp"
-                                      : "$rootImageDir/dispute.webp",
-                                  height:
-                                      controller.selectedIndex == 2
-                                          ? 26.h
-                                          : 26.h,
-                                  color:
-                                      appCtrl.basicCtrlList.isNotEmpty &&
-                                              appCtrl.basicCtrlList[0].exchange
-                                                      .toString() ==
-                                                  '0' &&
-                                              controller.selectedIndex == 2
-                                          ? AppColors.mainColor
-                                          : appCtrl.isDarkMode() == true
+                                  "$rootImageDir/transaction.webp",
+                                  height: 26.h,
+                                  color: controller.selectedIndex == 2
+                                      ? AppColors.mainColor
+                                      : appCtrl.isDarkMode() == true
                                           ? AppColors.whiteColor
                                           : AppColors.blackColor,
-                                  fit:
-                                      controller.selectedIndex == 2
-                                          ? BoxFit.fitWidth
-                                          : BoxFit.cover,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
@@ -246,42 +187,13 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                                   bottom: 10.h,
                                 ),
                                 child: Image.asset(
-                                  appCtrl.basicCtrlList.isNotEmpty &&
-                                              appCtrl.basicCtrlList[0].exchange
-                                                      .toString() ==
-                                                  '0' ||
-                                          appCtrl.basicCtrlList.isNotEmpty &&
-                                              appCtrl
-                                                      .basicCtrlList[0]
-                                                      .virtualCard
-                                                      .toString() ==
-                                                  '0'
-                                      ? "$rootImageDir/person.webp"
-                                      : controller.selectedIndex == 3
+                                  controller.selectedIndex == 3
                                       ? "$rootImageDir/person2.webp"
                                       : "$rootImageDir/person.webp",
-                                  height:
-                                      controller.selectedIndex == 3
-                                          ? 20.h
-                                          : 23.h,
-                                  color:
-                                      (appCtrl.basicCtrlList.isNotEmpty &&
-                                                      appCtrl
-                                                              .basicCtrlList[0]
-                                                              .exchange
-                                                              .toString() ==
-                                                          '0' ||
-                                                  appCtrl
-                                                          .basicCtrlList
-                                                          .isNotEmpty &&
-                                                      appCtrl
-                                                              .basicCtrlList[0]
-                                                              .virtualCard
-                                                              .toString() ==
-                                                          '0') &&
-                                              controller.selectedIndex == 3
-                                          ? AppColors.mainColor
-                                          : appCtrl.isDarkMode() == true
+                                  height: controller.selectedIndex == 3 ? 20.h : 23.h,
+                                  color: controller.selectedIndex == 3
+                                      ? AppColors.mainColor
+                                      : appCtrl.isDarkMode() == true
                                           ? AppColors.whiteColor
                                           : AppColors.blackColor,
                                   fit: BoxFit.cover,
@@ -291,13 +203,8 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                           ],
                         ),
                       ),
-                    ),
                     floatingActionButton:
-                        exchangeCtrl.amountFocusNode.hasFocus ||
-                                appCtrl.basicCtrlList.isNotEmpty &&
-                                    appCtrl.basicCtrlList[0].transfer
-                                            .toString() ==
-                                        '0'
+                        exchangeCtrl.amountFocusNode.hasFocus
                             ? SizedBox(height: 0, width: 0)
                             : Padding(
                               padding: EdgeInsets.only(top: 50.h),
@@ -333,7 +240,7 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                     floatingActionButtonLocation:
                         FloatingActionButtonLocation.centerDocked,
                   ),
-                );
+                ));
               },
             );
           },

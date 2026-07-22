@@ -133,7 +133,7 @@ class SupportTicketController extends GetxController {
 
   Future<void> pickFiles() async {
     try {
-      result = await FilePicker.platform.pickFiles(
+      result = await FilePicker.pickFiles(
         allowMultiple: true,
         type: FileType.image,
       );

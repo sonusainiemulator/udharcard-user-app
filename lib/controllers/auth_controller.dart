@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:paysecure/data/repositories/auth_repo.dart';
 import 'package:paysecure/data/source/errors/check_api_status.dart';
 import 'package:paysecure/utils/services/helpers.dart';
@@ -14,6 +15,146 @@ class AuthController extends GetxController {
   static AuthController get to => Get.find<AuthController>();
 
   bool isLoading = false;
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String verificationId = '';
+  bool isOtpSent = false;
+  int? resendToken;
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController otpController = TextEditingController();
+
+  Future sendOtp(String fullPhoneNumber) async {
+    isLoading = true;
+    update();
+    
+    try {
+      await _auth.verifyPhoneNumber(
+        phoneNumber: fullPhoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await _auth.signInWithCredential(credential);
+          User? user = _auth.currentUser;
+          if (user != null) {
+            await loginOrRegisterWithBackend(fullPhoneNumber, user.uid);
+          }
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          isLoading = false;
+          update();
+          Helpers.showSnackBar(msg: "Verification failed: ${e.message}");
+        },
+        codeSent: (String verId, int? forceResendingToken) {
+          verificationId = verId;
+          resendToken = forceResendingToken;
+          isOtpSent = true;
+          isLoading = false;
+          update();
+          Helpers.showSnackBar(msg: "Verification code sent to $fullPhoneNumber");
+        },
+        codeAutoRetrievalTimeout: (String verId) {
+          verificationId = verId;
+        },
+        timeout: const Duration(seconds: 60),
+      );
+    } catch (e) {
+      isLoading = false;
+      update();
+      Helpers.showSnackBar(msg: "Error sending OTP: $e");
+    }
+  }
+
+  Future verifyOtpAndLogin(String otpCode, String fullPhoneNumber) async {
+    isLoading = true;
+    update();
+    
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: otpCode,
+      );
+      
+      UserCredential userCredential = await _auth.signInWithCredential(credential);
+      User? user = userCredential.user;
+      if (user != null) {
+        await loginOrRegisterWithBackend(fullPhoneNumber, user.uid);
+      } else {
+        isLoading = false;
+        update();
+        Helpers.showSnackBar(msg: "Failed to sign in with Firebase");
+      }
+    } catch (e) {
+      isLoading = false;
+      update();
+      Helpers.showSnackBar(msg: "Invalid OTP code: $e");
+    }
+  }
+
+  Future loginOrRegisterWithBackend(String fullPhoneNumber, String firebaseUid) async {
+    String cleanDigits = fullPhoneNumber.replaceAll(RegExp(r'\D'), '');
+    String generatedUsername = "usr_$cleanDigits";
+    String generatedPassword = "Firebase_$firebaseUid";
+    
+    try {
+      http.Response loginResponse = await AuthRepo.login(data: {
+        "username": generatedUsername,
+        "password": generatedPassword,
+        "type": 'user',
+      });
+      
+      var loginData = jsonDecode(loginResponse.body);
+      if (loginResponse.statusCode == 200 && loginData['status'] == 'success') {
+        ApiStatus.checkStatus(loginData['status'], loginData['message']);
+        HiveHelp.write(Keys.token, loginData['token']);
+        Get.offAllNamed(RoutesName.bottomNavBar);
+        clearSignInController();
+        clearSignUpController();
+        isOtpSent = false;
+        phoneController.clear();
+        otpController.clear();
+      } else {
+        String cleanDialCode = phoneCode.replaceAll('+', '');
+        String rawPhone = cleanDigits;
+        if (cleanDigits.startsWith(cleanDialCode)) {
+          rawPhone = cleanDigits.substring(cleanDialCode.length);
+        }
+        
+        http.Response regResponse = await AuthRepo.register(data: {
+          "firstname": "Phone",
+          "lastname": "User",
+          "username": generatedUsername,
+          "email": "phone_$cleanDigits@paysecure.com",
+          "phone_code": phoneCode,
+          "phone": rawPhone,
+          "country": countryName,
+          "country_code": countryCode,
+          "password": generatedPassword,
+          "password_confirmation": generatedPassword
+        });
+        
+        var regData = jsonDecode(regResponse.body);
+        if (regResponse.statusCode == 200 && regData['status'] == 'success') {
+          ApiStatus.checkStatus(regData['status'], regData['message']);
+          HiveHelp.write(Keys.token, regData['token']);
+          Get.offAllNamed(RoutesName.bottomNavBar);
+          clearSignInController();
+          clearSignUpController();
+          isOtpSent = false;
+          phoneController.clear();
+          otpController.clear();
+        } else {
+          if (regData['message'] is List) {
+            Helpers.showSnackBar(msg: (regData['message'] as List).join('\n'));
+          } else {
+            Helpers.showSnackBar(msg: regData['message']?.toString() ?? 'Backend registration failed');
+          }
+        }
+      }
+    } catch (e) {
+      Helpers.showSnackBar(msg: "Authentication error: $e");
+    } finally {
+      isLoading = false;
+      update();
+    }
+  }
 
   // -----------------------sign in--------------------------
   TextEditingController userNameEditingController = TextEditingController();

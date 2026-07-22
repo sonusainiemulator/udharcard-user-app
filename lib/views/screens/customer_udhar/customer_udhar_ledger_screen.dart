@@ -95,9 +95,10 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
             topRight: Radius.circular(20.r),
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               "Settle Outstanding Balance",
@@ -138,6 +139,7 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
               child: const Text("Cancel"),
             ),
           ],
+          ),
         ),
       ),
     );
@@ -151,6 +153,31 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: shopName,
+        actions: [
+          GetBuilder<CustomerUdharController>(
+            builder: (controller) => IconButton(
+              icon: Icon(
+                Icons.filter_alt_outlined,
+                color: AppColors.mainColor,
+                size: 20,
+              ),
+              onPressed: () async {
+                final DateTimeRange? picked = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime.now(),
+                  initialDateRange: controller.ledgerDateRange,
+                );
+                if (picked != null) {
+                  controller.setLedgerDateRange(picked);
+                } else if (controller.ledgerDateRange != null) {
+                  controller.setLedgerDateRange(null); // Clear filter
+                }
+              },
+            ),
+          ),
+          SizedBox(width: 16),
+        ],
       ),
       body: GetBuilder<CustomerUdharController>(
         builder: (controller) {
@@ -162,9 +189,17 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
               ? (controller.outstandingBalance / controller.creditLimit).clamp(0.0, 1.0)
               : 0.0;
 
-          return Column(
-            children: [
-              // Balance summary card
+          return RefreshIndicator(
+            color: AppColors.mainColor,
+            onRefresh: () async {
+              await controller.getLedgerList(merchantId: merchantId, page: 1);
+            },
+            child: SingleChildScrollView(
+              controller: controller.scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  // Balance summary card
               Container(
                 width: double.infinity,
                 margin: EdgeInsets.all(16.w),
@@ -270,26 +305,24 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
               ),
 
               // Ledger Transactions List
-              Expanded(
-                child: controller.ledgerList.isEmpty
-                    ? Center(
-                        child: Text(
-                          "No transactions recorded yet.",
-                          style: TextStyle(color: AppThemes.getBlack50Color()),
-                        ),
-                      )
-                    : RefreshIndicator(
-                        color: AppColors.mainColor,
-                        onRefresh: () async {
-                          await controller.getLedgerList(merchantId: merchantId, page: 1);
-                        },
-                        child: ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          controller: controller.scrollController,
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          itemCount: controller.ledgerList.length,
+              if (controller.filteredLedgerList.isEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40.h),
+                  child: Center(
+                    child: Text(
+                      "No transactions recorded yet.",
+                      style: TextStyle(color: AppThemes.getBlack50Color()),
+                    ),
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          itemCount: controller.filteredLedgerList.length,
                           itemBuilder: (context, index) {
-                            final tx = controller.ledgerList[index];
+                            final tx = controller.filteredLedgerList[index];
                             final isCredit = tx['type'] == 'credit';
                             final status = tx['verification_status'] ?? 'unverified';
                             final date = DateTime.parse(tx['created_at']);
@@ -449,9 +482,9 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
                             );
                           },
                         ),
-                      ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),

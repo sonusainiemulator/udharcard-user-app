@@ -19,8 +19,8 @@ import 'profile_controller.dart';
 class AppController extends GetxController {
   static AppController get to => Get.find<AppController>();
   //-------------- check internet connectivity--------------
-  void updateConnectionStatus(ConnectivityResult connectivityResult) {
-    if (connectivityResult == ConnectivityResult.none) {
+  void updateConnectionStatus(List<ConnectivityResult> connectivityResultList) {
+    if (connectivityResultList.contains(ConnectivityResult.none)) {
       Get.dialog(
         const CustomDialog(),
         barrierDismissible:
