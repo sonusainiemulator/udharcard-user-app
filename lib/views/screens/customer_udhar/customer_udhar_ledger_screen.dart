@@ -87,7 +87,7 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
   void _showPaymentSheet(double amount) {
     Get.bottomSheet(
       Container(
-        padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         decoration: BoxDecoration(
           color: Get.isDarkMode ? AppColors.darkCardColor : Colors.white,
           borderRadius: BorderRadius.only(
@@ -96,52 +96,59 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
           ),
         ),
         child: SafeArea(
+          top: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              "Settle Outstanding Balance",
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            VSpace(20.h),
-            Text(
-              "Pay to $shopName",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppThemes.getBlack50Color()),
-            ),
-            VSpace(8.h),
-            Text(
-              "₹${amount.toStringAsFixed(2)}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28.sp,
-                fontWeight: FontWeight.bold,
-                color: AppColors.mainColor,
+            children: [
+              Text(
+                "Settle Outstanding Balance",
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.sp,
+                    ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            VSpace(24.h),
-            AppButton(
-              text: "Pay via QR Code / UPI",
-              onTap: () {
-                Get.back();
-                // Redirect user to their QR Scanner/payment flow
-                Get.toNamed('/qrCodeScreen');
-              },
-            ),
-            VSpace(10.h),
-            TextButton(
-              onPressed: () => Get.back(),
-              child: const Text("Cancel"),
-            ),
-          ],
+              VSpace(10.h),
+              Text(
+                "Pay to $shopName",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppThemes.getBlack50Color()),
+              ),
+              VSpace(6.h),
+              Text(
+                "₹${amount.toStringAsFixed(2)}",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.mainColor,
+                ),
+              ),
+              VSpace(16.h),
+              AppButton(
+                text: "Pay via QR Code / UPI",
+                onTap: () {
+                  Get.back();
+                  // Redirect user to their QR Scanner/payment flow
+                  Get.toNamed('/qrCodeScreen');
+                },
+              ),
+              VSpace(4.h),
+              TextButton(
+                onPressed: () => Get.back(),
+                style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: EdgeInsets.symmetric(vertical: 6.h),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text("Cancel"),
+              ),
+            ],
           ),
         ),
       ),
+      isScrollControlled: true,
     );
   }
 

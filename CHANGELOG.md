@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.6+9] - 2026-07-22
+
+### Changed
+- **Version Bump**: Increment version code to 9 (`versionCode 9`, `2.1.6+9`) for Google Play Console compatibility.
+
 ## [2.1.5+8] - 2026-07-22
 
 ### Fixed
