@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.6+10] - 2026-07-23
+
+### Changed
+- **Version Code**: Bumped build number to 10 (`2.1.6+10`) for Google Play Store upload.
+
+### Added
+- **Unit Test Suite**: Added `test/auth_login_test.dart` for AuthController, phone number sanitization, dial code handling, and verification payloads.
+- **CI/CD Workflow**: Added GitHub Actions pipeline (`.github/workflows/ci.yml`) to automatically run static analysis, execute test suites, and build the release Android App Bundle (`app-release.aab`).
+- **Firebase CLI OTP Testing Guide**: Added `docs/firebase_cli_otp_testing.md` for Firebase Auth Emulator and CLI automated testing workflows.
+
 ## [2.1.6+9] - 2026-07-22
 
 ### Changed
