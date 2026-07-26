@@ -89,6 +89,7 @@ class SignUpScreen extends StatelessWidget {
                                     controller.countryCode = countryCode.code!;
                                     controller.phoneCode = countryCode.dialCode!;
                                     controller.countryName = countryCode.name!;
+                                    controller.errorMessage = null;
                                     controller.update();
                                   },
                                   initialSelection: controller.countryCode,
@@ -108,13 +109,19 @@ class SignUpScreen extends StatelessWidget {
                                   keyboardType: TextInputType.phone,
                                   controller: controller.phoneController,
                                   onChanged: (v) {
+                                    if (controller.errorMessage != null) {
+                                      controller.errorMessage = null;
+                                    }
                                     controller.update();
                                   },
                                 ),
                               ),
                             ],
                           ),
-                          VSpace(48.h),
+                          if (controller.errorMessage != null &&
+                              controller.errorMessage!.isNotEmpty)
+                            _buildInlineError(controller.errorMessage!, t),
+                          VSpace(32.h),
                           Material(
                             color: Colors.transparent,
                             child: AppButton(
@@ -135,15 +142,8 @@ class SignUpScreen extends StatelessWidget {
                             ),
                           ),
                         ] else ...[
-                          Text(
-                            "${storedLanguage['Verification code sent to'] ?? 'Verification code sent to'} ${controller.phoneCode} ${controller.phoneController.text}",
-                            style: t.displayMedium?.copyWith(
-                              color: AppColors.mainColor,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18.sp,
-                            ),
-                          ),
-                          VSpace(32.h),
+                          _buildOtpInfoCard(controller, storedLanguage, t),
+                          VSpace(24.h),
                           CustomTextField(
                             hintext: storedLanguage['6-Digit OTP'] ?? "6-Digit OTP",
                             isPrefixIcon: true,
@@ -151,10 +151,16 @@ class SignUpScreen extends StatelessWidget {
                             keyboardType: TextInputType.number,
                             controller: controller.otpController,
                             onChanged: (v) {
+                              if (controller.errorMessage != null) {
+                                controller.errorMessage = null;
+                              }
                               controller.update();
                             },
                           ),
-                          VSpace(48.h),
+                          if (controller.errorMessage != null &&
+                              controller.errorMessage!.isNotEmpty)
+                            _buildInlineError(controller.errorMessage!, t),
+                          VSpace(32.h),
                           Material(
                             color: Colors.transparent,
                             child: AppButton(
@@ -184,6 +190,7 @@ class SignUpScreen extends StatelessWidget {
                               onPressed: () {
                                 controller.isOtpSent = false;
                                 controller.otpController.clear();
+                                controller.errorMessage = null;
                                 controller.update();
                               },
                               child: Text(
@@ -231,6 +238,94 @@ class SignUpScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildOtpInfoCard(AuthController controller, Map storedLanguage, TextTheme t) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: AppColors.mainColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(
+          color: AppColors.mainColor.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.mark_email_read_outlined,
+            color: AppColors.mainColor,
+            size: 20.sp,
+          ),
+          HSpace(10.w),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                style: t.bodyMedium?.copyWith(
+                  color: AppThemes.getParagraphColor(),
+                  fontSize: 13.sp,
+                ),
+                children: [
+                  TextSpan(
+                    text: "${storedLanguage['Verification code sent to'] ?? 'Verification code sent to'} ",
+                  ),
+                  TextSpan(
+                    text: "${controller.phoneCode} ${controller.phoneController.text}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.mainColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInlineError(String errorText, TextTheme t) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(top: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(
+          color: const Color(0xFFFCA5A5),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 2.h),
+            child: Icon(
+              Icons.error_outline_rounded,
+              color: const Color(0xFFDC2626),
+              size: 18.sp,
+            ),
+          ),
+          HSpace(10.w),
+          Expanded(
+            child: Text(
+              errorText,
+              style: t.bodyMedium?.copyWith(
+                color: const Color(0xFF991B1B),
+                fontWeight: FontWeight.w500,
+                fontSize: 13.sp,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -15,6 +15,7 @@ class AuthController extends GetxController {
   static AuthController get to => Get.find<AuthController>();
 
   bool isLoading = false;
+  String? errorMessage;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String verificationId = '';
@@ -25,6 +26,7 @@ class AuthController extends GetxController {
 
   Future sendOtp(String fullPhoneNumber) async {
     isLoading = true;
+    errorMessage = null;
     update();
     
     try {
@@ -39,16 +41,17 @@ class AuthController extends GetxController {
         },
         verificationFailed: (FirebaseAuthException e) {
           isLoading = false;
+          errorMessage = e.message ?? "Verification failed";
           update();
-          Helpers.showSnackBar(msg: "Verification failed: ${e.message}");
+          Helpers.showSnackBar(msg: "Verification failed: ${e.message}", title: "Error!");
         },
         codeSent: (String verId, int? forceResendingToken) {
           verificationId = verId;
           resendToken = forceResendingToken;
           isOtpSent = true;
           isLoading = false;
+          errorMessage = null;
           update();
-          Helpers.showSnackBar(msg: "Verification code sent to $fullPhoneNumber");
         },
         codeAutoRetrievalTimeout: (String verId) {
           verificationId = verId;
@@ -57,13 +60,15 @@ class AuthController extends GetxController {
       );
     } catch (e) {
       isLoading = false;
+      errorMessage = "Error sending OTP: $e";
       update();
-      Helpers.showSnackBar(msg: "Error sending OTP: $e");
+      Helpers.showSnackBar(msg: "Error sending OTP: $e", title: "Error!");
     }
   }
 
   Future verifyOtpAndLogin(String otpCode, String fullPhoneNumber) async {
     isLoading = true;
+    errorMessage = null;
     update();
     
     try {
@@ -78,78 +83,139 @@ class AuthController extends GetxController {
         await loginOrRegisterWithBackend(fullPhoneNumber, user.uid);
       } else {
         isLoading = false;
+        errorMessage = "Failed to sign in with Firebase";
         update();
-        Helpers.showSnackBar(msg: "Failed to sign in with Firebase");
+        Helpers.showSnackBar(msg: "Failed to sign in with Firebase", title: "Error!");
       }
     } catch (e) {
       isLoading = false;
+      errorMessage = "Invalid OTP code: ${e is FirebaseAuthException ? (e.message ?? e.toString()) : e.toString()}";
       update();
-      Helpers.showSnackBar(msg: "Invalid OTP code: $e");
+      Helpers.showSnackBar(msg: "Invalid OTP code", title: "Error!");
     }
   }
 
   Future loginOrRegisterWithBackend(String fullPhoneNumber, String firebaseUid) async {
     String cleanDigits = fullPhoneNumber.replaceAll(RegExp(r'\D'), '');
+    String cleanDialCode = phoneCode.replaceAll('+', '');
+    String rawPhone = cleanDigits;
+    if (cleanDigits.startsWith(cleanDialCode)) {
+      rawPhone = cleanDigits.substring(cleanDialCode.length);
+    }
+
     String generatedUsername = "usr_$cleanDigits";
-    String generatedPassword = "Firebase_$firebaseUid";
-    
+    String deterministicPassword = "PaySecure_$cleanDigits";
+    String firebasePassword = "Firebase_$firebaseUid";
+    String phonePassword = "Phone_$cleanDigits";
+
+    List<String> passwordCandidates = [
+      deterministicPassword,
+      firebasePassword,
+      phonePassword,
+    ];
+
+    List<String> usernameCandidates = [
+      generatedUsername,
+      rawPhone,
+      fullPhoneNumber,
+      "phone_$cleanDigits@paysecure.com",
+    ];
+
+    errorMessage = null;
+
     try {
-      http.Response loginResponse = await AuthRepo.login(data: {
+      // 1. Attempt login with candidate combinations
+      for (String u in usernameCandidates) {
+        for (String p in passwordCandidates) {
+          http.Response loginResponse = await AuthRepo.login(data: {
+            "username": u,
+            "password": p,
+            "type": 'user',
+          });
+
+          if (loginResponse.statusCode == 200) {
+            var loginData = jsonDecode(loginResponse.body);
+            if (loginData['status'] == 'success' && loginData['token'] != null) {
+              ApiStatus.checkStatus(loginData['status'], loginData['message']);
+              HiveHelp.write(Keys.token, loginData['token']);
+              Get.offAllNamed(RoutesName.bottomNavBar);
+              clearSignInController();
+              clearSignUpController();
+              isOtpSent = false;
+              phoneController.clear();
+              otpController.clear();
+              errorMessage = null;
+              return;
+            }
+          }
+        }
+      }
+
+      // 2. If login attempts failed, attempt user registration with deterministic password
+      http.Response regResponse = await AuthRepo.register(data: {
+        "firstname": "Phone",
+        "lastname": "User",
         "username": generatedUsername,
-        "password": generatedPassword,
-        "type": 'user',
+        "email": "phone_$cleanDigits@paysecure.com",
+        "phone_code": phoneCode,
+        "phone": rawPhone,
+        "country": countryName,
+        "country_code": countryCode,
+        "password": deterministicPassword,
+        "password_confirmation": deterministicPassword
       });
-      
-      var loginData = jsonDecode(loginResponse.body);
-      if (loginResponse.statusCode == 200 && loginData['status'] == 'success') {
-        ApiStatus.checkStatus(loginData['status'], loginData['message']);
-        HiveHelp.write(Keys.token, loginData['token']);
+
+      var regData = jsonDecode(regResponse.body);
+      if (regResponse.statusCode == 200 && regData['status'] == 'success') {
+        ApiStatus.checkStatus(regData['status'], regData['message']);
+        HiveHelp.write(Keys.token, regData['token']);
         Get.offAllNamed(RoutesName.bottomNavBar);
         clearSignInController();
         clearSignUpController();
         isOtpSent = false;
         phoneController.clear();
         otpController.clear();
-      } else {
-        String cleanDialCode = phoneCode.replaceAll('+', '');
-        String rawPhone = cleanDigits;
-        if (cleanDigits.startsWith(cleanDialCode)) {
-          rawPhone = cleanDigits.substring(cleanDialCode.length);
-        }
-        
-        http.Response regResponse = await AuthRepo.register(data: {
-          "firstname": "Phone",
-          "lastname": "User",
-          "username": generatedUsername,
-          "email": "phone_$cleanDigits@paysecure.com",
-          "phone_code": phoneCode,
-          "phone": rawPhone,
-          "country": countryName,
-          "country_code": countryCode,
-          "password": generatedPassword,
-          "password_confirmation": generatedPassword
-        });
-        
-        var regData = jsonDecode(regResponse.body);
-        if (regResponse.statusCode == 200 && regData['status'] == 'success') {
-          ApiStatus.checkStatus(regData['status'], regData['message']);
-          HiveHelp.write(Keys.token, regData['token']);
-          Get.offAllNamed(RoutesName.bottomNavBar);
-          clearSignInController();
-          clearSignUpController();
-          isOtpSent = false;
-          phoneController.clear();
-          otpController.clear();
-        } else {
-          if (regData['message'] is List) {
-            Helpers.showSnackBar(msg: (regData['message'] as List).join('\n'));
-          } else {
-            Helpers.showSnackBar(msg: regData['message']?.toString() ?? 'Backend registration failed');
+        errorMessage = null;
+        return;
+      }
+
+      // 3. If registration failed because user/phone/email already exists
+      String regMsg = regData['message'] is List
+          ? (regData['message'] as List).join('\n')
+          : (regData['message']?.toString() ?? '');
+
+      if (regMsg.toLowerCase().contains('taken') || regMsg.toLowerCase().contains('exist')) {
+        // Account exists on backend. Perform retry login across candidates:
+        for (String u in usernameCandidates) {
+          for (String p in passwordCandidates) {
+            http.Response retryLogin = await AuthRepo.login(data: {
+              "username": u,
+              "password": p,
+              "type": 'user',
+            });
+            if (retryLogin.statusCode == 200) {
+              var retryData = jsonDecode(retryLogin.body);
+              if (retryData['status'] == 'success' && retryData['token'] != null) {
+                ApiStatus.checkStatus(retryData['status'], retryData['message']);
+                HiveHelp.write(Keys.token, retryData['token']);
+                Get.offAllNamed(RoutesName.bottomNavBar);
+                clearSignInController();
+                clearSignUpController();
+                isOtpSent = false;
+                phoneController.clear();
+                otpController.clear();
+                errorMessage = null;
+                return;
+              }
+            }
           }
         }
+        errorMessage = "An account with this phone number already exists. Please log in using your credentials.";
+      } else {
+        errorMessage = regMsg.isNotEmpty ? regMsg : 'Backend registration failed';
       }
     } catch (e) {
-      Helpers.showSnackBar(msg: "Authentication error: $e");
+      errorMessage = "Authentication error: $e";
     } finally {
       isLoading = false;
       update();
@@ -169,10 +235,12 @@ class AuthController extends GetxController {
     signInPassEditingController.clear();
     userNameVal = "";
     singInPassVal = "";
+    errorMessage = null;
   }
 
   Future login() async {
     isLoading = true;
+    errorMessage = null;
     update();
     http.Response response = await AuthRepo.login(data: {
       "username": userNameVal,
@@ -184,6 +252,7 @@ class AuthController extends GetxController {
     var data = jsonDecode(response.body);
     if (response.statusCode == 200) {
       if (data['status'] == 'success') {
+        errorMessage = null;
         ApiStatus.checkStatus(data['status'], data['message']);
         if (isRemember == true) {
           HiveHelp.write(Keys.userName, userNameVal);
@@ -193,10 +262,12 @@ class AuthController extends GetxController {
         Get.offAllNamed(RoutesName.bottomNavBar);
         clearSignInController();
       } else {
+        errorMessage = data['message']?.toString();
         ApiStatus.checkStatus(data['status'], data['message']);
       }
     } else {
-      Helpers.showSnackBar(msg: '${data['message']}');
+      errorMessage = data['message']?.toString() ?? 'Login failed';
+      Helpers.showSnackBar(msg: '${data['message']}', title: "Error!");
     }
   }
 
@@ -234,6 +305,7 @@ class AuthController extends GetxController {
     phoneNumberVal = "";
     signUpPassVal = "";
     signUpConfirmPassVal = "";
+    errorMessage = null;
   }
 
   Future register() async {

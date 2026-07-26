@@ -31,14 +31,14 @@ class Helpers {
   static bool _isToastVisible = false;
   static showSnackBar({
     String msg = "Field must not be empty!",
-    String title = "Error!",
+    String title = "Notification",
     int? durationTime = 3,
     Widget? icon,
     Widget? titleText,
     Widget? messageText,
     Color? textColor,
     Color? bgColor,
-    SnackPosition? snackPosition = SnackPosition.TOP,
+    SnackPosition? snackPosition = SnackPosition.BOTTOM,
   }) {
     if (_isToastVisible) {
       debugPrint("A toast is already visible. Skipping...");
@@ -55,19 +55,21 @@ class Helpers {
     Get.snackbar(
       title,
       msg,
-      snackPosition: snackPosition ?? SnackPosition.TOP,
-      margin: EdgeInsets.zero,
-      borderRadius: 0,
-      backgroundColor: _isError ? AppColors.redColor : AppColors.greenColor,
-      colorText: Colors.white,
-      icon: Icon(
-        _isError ? Icons.error_outline : Icons.check_circle_outline,
-        color: Colors.white,
-      ),
+      snackPosition: snackPosition ?? SnackPosition.BOTTOM,
+      margin: EdgeInsets.all(16.w),
+      borderRadius: 12.r,
+      backgroundColor: bgColor ?? (_isError ? const Color(0xFFDC2626) : const Color(0xFF1E293B)),
+      colorText: textColor ?? Colors.white,
+      icon: icon ??
+          Icon(
+            _isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+            color: Colors.white,
+            size: 22.sp,
+          ),
       isDismissible: true,
-      dismissDirection: DismissDirection.up,
-      forwardAnimationCurve: Curves.easeOut,
-      reverseAnimationCurve: Curves.easeIn,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutCubic,
+      reverseAnimationCurve: Curves.easeInCubic,
       animationDuration: const Duration(milliseconds: 300),
       duration: Duration(seconds: durationTime ?? 3),
       snackbarStatus: (status) {

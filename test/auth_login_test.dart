@@ -2,19 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Auth Login & Phone OTP Logic Tests', () {
-    test('Phone number sanitization formats username and email correctly', () {
+    test('Phone number sanitization formats username, email & deterministic password correctly', () {
       const String rawPhoneNumber = '+91 97825 3398';
       final String cleanDigits = rawPhoneNumber.replaceAll(RegExp(r'\D'), '');
       
       final String generatedUsername = "usr_$cleanDigits";
       final String generatedEmail = "phone_$cleanDigits@paysecure.com";
-      const String firebaseUid = "test_uid_123456";
-      final String generatedPassword = "Firebase_$firebaseUid";
+      final String deterministicPassword = "PaySecure_$cleanDigits";
 
       expect(cleanDigits, equals('91978253398'));
       expect(generatedUsername, equals('usr_91978253398'));
       expect(generatedEmail, equals('phone_91978253398@paysecure.com'));
-      expect(generatedPassword, equals('Firebase_test_uid_123456'));
+      expect(deterministicPassword, equals('PaySecure_91978253398'));
     });
 
     test('Raw phone extraction removes country dial code properly', () {
@@ -31,10 +30,23 @@ void main() {
       expect(rawPhone, equals('978253398'));
     });
 
-    test('Test phone number +91978253398 verification payload format', () {
-      const String testPhoneNumber = '+91978253398';
-      expect(testPhoneNumber.startsWith('+91'), isTrue);
-      expect(testPhoneNumber.length, equals(12));
+    test('Deterministic candidates list is correctly populated for login fallback', () {
+      const String cleanDigits = '91978253398';
+      const String firebaseUid = 'firebase_abc123';
+      
+      final String deterministicPassword = "PaySecure_$cleanDigits";
+      final String firebasePassword = "Firebase_$firebaseUid";
+      final String phonePassword = "Phone_$cleanDigits";
+
+      List<String> passwordCandidates = [
+        deterministicPassword,
+        firebasePassword,
+        phonePassword,
+      ];
+
+      expect(passwordCandidates.contains('PaySecure_91978253398'), isTrue);
+      expect(passwordCandidates.contains('Firebase_firebase_abc123'), isTrue);
+      expect(passwordCandidates.contains('Phone_91978253398'), isTrue);
     });
   });
 }

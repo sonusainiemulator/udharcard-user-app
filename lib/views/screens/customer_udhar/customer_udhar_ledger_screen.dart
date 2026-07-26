@@ -87,7 +87,7 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
   void _showPaymentSheet(double amount) {
     Get.bottomSheet(
       Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         decoration: BoxDecoration(
           color: Get.isDarkMode ? AppColors.darkCardColor : Colors.white,
           borderRadius: BorderRadius.only(
@@ -109,11 +109,11 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
                     ),
                 textAlign: TextAlign.center,
               ),
-              VSpace(10.h),
+              VSpace(8.h),
               Text(
                 "Pay to $shopName",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppThemes.getBlack50Color()),
+                style: TextStyle(color: AppThemes.getBlack50Color(), fontSize: 14.sp),
               ),
               VSpace(6.h),
               Text(
@@ -134,21 +134,28 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
                   Get.toNamed('/qrCodeScreen');
                 },
               ),
-              VSpace(4.h),
+              VSpace(6.h),
               TextButton(
                 onPressed: () => Get.back(),
                 style: TextButton.styleFrom(
                   minimumSize: Size.zero,
-                  padding: EdgeInsets.symmetric(vertical: 6.h),
+                  padding: EdgeInsets.symmetric(vertical: 4.h),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text("Cancel"),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
-      isScrollControlled: true,
+      isScrollControlled: false,
     );
   }
 
