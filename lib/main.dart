@@ -15,8 +15,6 @@ import 'routes/routes_helper.dart';
 import 'routes/routes_name.dart';
 import 'themes/themes.dart';
 import 'utils/app_constants.dart';
-import 'utils/services/helpers.dart';
-import 'utils/services/localstorage/hive.dart';
 import 'utils/services/localstorage/init_hive.dart';
 import 'firebase_options.dart';
 

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:paysecure/controllers/bindings/controller_index.dart';
 import '../../../../config/app_colors.dart';
-import '../../../config/dimensions.dart';
 import '../../../themes/themes.dart';
-import '../../../utils/services/helpers.dart';
 import '../../../utils/services/localstorage/hive.dart';
 import '../../../utils/services/localstorage/keys.dart';
 import '../../widgets/app_button.dart';
@@ -161,9 +158,6 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    TextTheme t = Theme.of(context).textTheme;
-    var storedLanguage = HiveHelp.read(Keys.languageData) ?? {};
-
     return Scaffold(
       appBar: CustomAppBar(
         title: shopName,

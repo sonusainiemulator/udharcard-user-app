@@ -1,11 +1,8 @@
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:paysecure/controllers/bindings/controller_index.dart';
 import 'package:paysecure/routes/routes_name.dart';
-import 'package:paysecure/views/screens/home/dummy_data.dart';
 import 'package:paysecure/views/widgets/mediaquery_extension.dart';
 import 'package:paysecure/views/widgets/text_theme_extension.dart';
 import '../../../../config/app_colors.dart';
@@ -15,11 +12,8 @@ import '../../../utils/app_constants.dart';
 import '../../../utils/services/helpers.dart';
 import '../../../utils/services/localstorage/hive.dart';
 import '../../../utils/services/localstorage/keys.dart';
-import '../../widgets/appDialog.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/spacing.dart';
-import '../transaction/transaction_screen.dart';
-import '../qr_payment/deposit_qr_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -135,6 +129,12 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildQuickFeatures(BuildContext context, AppController appCtrl, TextTheme t, Map storedLanguage) {
     List<Map<String, dynamic>> features = [
       {
+        "name": "Voice Mode",
+        "icon": Icons.mic,
+        "route": RoutesName.voiceModeScreen,
+        "enabled": true,
+      },
+      {
         "name": storedLanguage['Deposit'] ?? "Deposit",
         "icon": Icons.account_balance_wallet,
         "route": RoutesName.depositScreen,
@@ -146,12 +146,17 @@ class _HomeScreenState extends State<HomeScreen>
         "route": RoutesName.sendMoneyScreen,
         "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].transfer.toString() == '1',
       },
-
       {
         "name": storedLanguage['Withdraw'] ?? "Withdraw",
         "icon": Icons.money_off,
         "route": RoutesName.withdrawScreen,
         "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].payout.toString() == '1',
+      },
+      {
+        "name": "Upcoming",
+        "icon": Icons.timer_outlined,
+        "route": RoutesName.comingSoonScreen,
+        "enabled": true,
       },
     ];
 
@@ -214,14 +219,7 @@ class _HomeScreenState extends State<HomeScreen>
     final code = appCtrl.walletList.isNotEmpty
         ? appCtrl.walletList[0].currency?.code ?? 'INR'
         : 'INR';
-    final userName = profileCtrl.userName.isNotEmpty
-        ? profileCtrl.userName.toUpperCase()
-        : (HiveHelp.read(Keys.userFullName) ?? 'USER').toUpperCase();
-
-    // Parse balance for limit bar
-    final double balanceVal = double.tryParse(balance.replaceAll(',', '')) ?? 0;
-    const double creditLimit = 50000;
-    final double usedRatio = (balanceVal / creditLimit).clamp(0.0, 1.0);
+    final balanceVal = double.tryParse(balance.replaceAll(',', '')) ?? 0;
 
     return GestureDetector(
       onTap: () => Get.toNamed(RoutesName.customerUdharMerchantsScreen),

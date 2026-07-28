@@ -203,7 +203,93 @@ class SignUpScreen extends StatelessWidget {
                             ),
                           ),
                         ],
-                        VSpace(60.h),
+                        VSpace(32.h),
+                        // ───── OR Divider ─────
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: AppThemes.getHintColor().withValues(alpha: 0.3),
+                                thickness: 1,
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w),
+                              child: Text(
+                                "OR",
+                                style: t.bodyMedium?.copyWith(
+                                  color: AppThemes.getHintColor(),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13.sp,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: AppThemes.getHintColor().withValues(alpha: 0.3),
+                                thickness: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                        VSpace(16.h),
+                        // ───── Google Sign-In Button ─────
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: controller.isLoading
+                                ? null
+                                : () => controller.signInWithGoogle(),
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(
+                                vertical: 14.h,
+                                horizontal: 20.w,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.network(
+                                    'https://www.google.com/favicon.ico',
+                                    height: 22.h,
+                                    width: 22.h,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.g_mobiledata_rounded,
+                                      size: 24.sp,
+                                      color: const Color(0xFF4285F4),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Text(
+                                    "Continue with Google",
+                                    style: t.bodyMedium?.copyWith(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF1A1A2E),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        VSpace(28.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -228,7 +314,8 @@ class SignUpScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        VSpace(60.h),
+                        VSpace(40.h),
+
                       ],
                     ),
                   ),

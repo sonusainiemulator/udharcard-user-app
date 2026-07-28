@@ -10,6 +10,7 @@ import '../../../config/dimensions.dart';
 import '../../../routes/routes_name.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/spacing.dart';
+import 'package:lottie/lottie.dart';
 import 'onbording_data.dart';
 
 class OnbordingScreen extends StatefulWidget {
@@ -59,19 +60,26 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (i != 2)
+                        if (i != 3)
                           Padding(
                             padding: Dimensions.kDefaultPadding,
                             child: Center(
-                              child: Image.asset(
-                                onBordingDataList[i].imagePath,
-                                height: i == 0 ? 390.h : 340.h,
-                                width: i == 0 ? 390.h : 340.h,
-                                fit: BoxFit.fitHeight,
-                              ),
+                              child: onBordingDataList[i].isLottie
+                                  ? Lottie.network(
+                                      onBordingDataList[i].imagePath,
+                                      height: i == 0 ? 390.h : 340.h,
+                                      width: i == 0 ? 390.h : 340.h,
+                                      fit: BoxFit.contain,
+                                    )
+                                  : Image.asset(
+                                      onBordingDataList[i].imagePath,
+                                      height: i == 0 ? 390.h : 340.h,
+                                      width: i == 0 ? 390.h : 340.h,
+                                      fit: BoxFit.fitHeight,
+                                    ),
                             ),
                           ),
-                        if (i == 2)
+                        if (i == 3)
                           Column(
                             children: [
                               SizedBox(
@@ -208,7 +216,7 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
                       height: 2.h,
                       width: 32.w,
                       color:
-                          currentIndex == 2
+                          currentIndex == 3
                               ? AppColors.mainColor
                               : AppColors.sliderInActiveColor,
                     ),

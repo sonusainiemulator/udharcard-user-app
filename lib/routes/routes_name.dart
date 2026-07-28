@@ -78,4 +78,7 @@ class RoutesName {
 
   static String customerUdharMerchantsScreen = "/customerUdharMerchantsScreen";
   static String customerUdharLedgerScreen = "/customerUdharLedgerScreen";
+
+  static String voiceModeScreen = "/voiceModeScreen";
+  static String comingSoonScreen = "/comingSoonScreen";
 }

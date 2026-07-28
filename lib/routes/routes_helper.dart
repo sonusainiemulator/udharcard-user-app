@@ -13,6 +13,8 @@ import '../views/screens/invoice/invoice_history_screen.dart';
 import 'package:paysecure/routes/page_index.dart';
 import '../views/screens/customer_udhar/customer_udhar_merchants_screen.dart';
 import '../views/screens/customer_udhar/customer_udhar_ledger_screen.dart';
+import '../views/screens/voice_mode/voice_mode_screen.dart';
+import '../views/screens/coming_soon/coming_soon_screen.dart';
 
 class RouteHelper {
   static List<GetPage> routes() => [
@@ -203,5 +205,11 @@ class RouteHelper {
         GetPage(
             name: RoutesName.customerUdharLedgerScreen,
             page: () => const CustomerUdharLedgerScreen()),
+        GetPage(
+            name: RoutesName.voiceModeScreen,
+            page: () => const VoiceModeScreen()),
+        GetPage(
+            name: RoutesName.comingSoonScreen,
+            page: () => const ComingSoonScreen(featureName: "Upcoming")),
       ];
 }

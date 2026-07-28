@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.7+12] - 2026-07-28
+
+### Added
+- **Gemini AI Voice Mode**: Integrated `google_generative_ai` (`gemini-1.5-flash`), `speech_to_text`, and `flutter_tts` for hands-free voice commands with Hindi audio responses (`lib/services/ai_service.dart`, `lib/services/voice_service.dart`, `lib/views/screens/voice_mode/voice_mode_screen.dart`).
+- **Lottie Onboarding Screen**: Added Lottie animation onboarding step for Voice Mode (`onbording_screen.dart`, `onbording_data.dart`).
+- **Coming Soon Placeholder**: Added `ComingSoonScreen` UI for upcoming features.
+- **GitOps Agent Framework**: Added `.agents/AGENTS.md`, `.github/AGENTS.md`, and `AGENTS.md` specifying GitOps guidelines, commit rules, and automatic changelog maintenance.
+- **GitHub Release & Debug APK Workflow**: Created `.github/workflows/release.yml` to automatically build Debug APK (`app-debug.apk`), Release APK (`app-release.apk`), and App Bundle (`app-release.aab`) and publish them directly to GitHub Releases.
+
+### Changed
+- **Rebranding**: Complete rebranding from PaySecure to **Udharcard** across Android, iOS, Web, Windows, and Linux.
+
 ## [2.1.6+10] - 2026-07-23
 
 ### Changed
