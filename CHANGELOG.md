@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0+15] - 2026-09-21 00:37:00 IST
+
+### Added & Fixed
+- **App Store Privacy Purpose Strings**: Added `NSMicrophoneUsageDescription` and `NSSpeechRecognitionUsageDescription` to `Info.plist` required by Apple for Gemini AI Voice Mode and Speech-to-Text APIs.
+- **App Store Export Compliance**: Added `ITSAppUsesNonExemptEncryption` set to `false` in `Info.plist` for instant TestFlight processing without manual compliance forms.
+- **Build Increment**: Bumped build number to 15 (`2.2.0+15`) for TestFlight re-upload.
+
 ## [2.2.0+14] - 2026-09-20 19:25:00 IST
 
 ### Upgraded

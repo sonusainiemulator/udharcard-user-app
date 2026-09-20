@@ -30,6 +30,12 @@
     <string>We need access to the camera to take photos</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>We need access to your photo library to select and upload photos.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>We need access to your microphone for voice commands and voice khata entry.</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>We need speech recognition to transcribe your voice commands and entries.</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     <key>UIApplicationSceneManifest</key>
