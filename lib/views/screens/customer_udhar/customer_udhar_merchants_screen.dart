@@ -103,7 +103,7 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -117,7 +117,7 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                           top: -20.h,
                           child: CircleAvatar(
                             radius: 60.r,
-                            backgroundColor: Colors.white.withOpacity(0.04),
+                            backgroundColor: Colors.white.withValues(alpha: 0.04),
                           ),
                         ),
                         Padding(
@@ -147,7 +147,7 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                                       vertical: 4.h,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.15),
+                                      color: Colors.white.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(20.r),
                                     ),
                                     child: Text(
@@ -171,7 +171,7 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                                       Text(
                                         "Outstanding Balance",
                                         style: t.bodySmall?.copyWith(
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withValues(alpha: 0.7),
                                           fontSize: 11.sp,
                                         ),
                                       ),
@@ -192,7 +192,7 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                                       Text(
                                         "Due Date",
                                         style: t.bodySmall?.copyWith(
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withValues(alpha: 0.7),
                                           fontSize: 11.sp,
                                         ),
                                       ),
@@ -216,14 +216,14 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                                   Text(
                                     "Limit: ₹${creditLimit.toStringAsFixed(0)}",
                                     style: t.bodySmall?.copyWith(
-                                      color: Colors.white.withOpacity(0.8),
+                                      color: Colors.white.withValues(alpha: 0.8),
                                       fontSize: 12.sp,
                                     ),
                                   ),
                                   Text(
                                     "${(progress * 100).toStringAsFixed(0)}% Used",
                                     style: t.bodySmall?.copyWith(
-                                      color: Colors.white.withOpacity(0.8),
+                                      color: Colors.white.withValues(alpha: 0.8),
                                       fontSize: 12.sp,
                                     ),
                                   ),
@@ -235,7 +235,7 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                                 child: LinearProgressIndicator(
                                   value: progress,
                                   minHeight: 6.h,
-                                  backgroundColor: Colors.white.withOpacity(0.15),
+                                  backgroundColor: Colors.white.withValues(alpha: 0.15),
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     progress > 0.85
                                         ? Colors.redAccent

@@ -4,8 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:paysecure/controllers/bindings/controller_index.dart';
 import '../../../../config/app_colors.dart';
 import '../../../themes/themes.dart';
-import '../../../utils/services/localstorage/hive.dart';
-import '../../../utils/services/localstorage/keys.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/custom_textfield.dart';
@@ -217,7 +215,7 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -285,7 +283,7 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 6.h,
-                        backgroundColor: Colors.grey.withOpacity(0.2),
+                        backgroundColor: Colors.grey.withValues(alpha: 0.2),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           progress > 0.85
                               ? Colors.redAccent
@@ -353,8 +351,8 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
                                           children: [
                                             CircleAvatar(
                                               backgroundColor: isCredit
-                                                  ? Colors.red.withOpacity(0.1)
-                                                  : Colors.green.withOpacity(0.1),
+                                                  ? Colors.red.withValues(alpha: 0.1)
+                                                  : Colors.green.withValues(alpha: 0.1),
                                               child: Icon(
                                                 isCredit
                                                     ? Icons.arrow_outward
@@ -428,10 +426,10 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
                                               ),
                                               decoration: BoxDecoration(
                                                 color: status == 'verified'
-                                                    ? Colors.green.withOpacity(0.15)
+                                                    ? Colors.green.withValues(alpha: 0.15)
                                                     : status == 'disputed'
-                                                        ? Colors.red.withOpacity(0.15)
-                                                        : Colors.orange.withOpacity(0.15),
+                                                        ? Colors.red.withValues(alpha: 0.15)
+                                                        : Colors.orange.withValues(alpha: 0.15),
                                                 borderRadius: BorderRadius.circular(4.r),
                                               ),
                                               child: Text(

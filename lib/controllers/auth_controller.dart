@@ -25,7 +25,51 @@ class AuthController extends GetxController {
   TextEditingController phoneController = TextEditingController();
   TextEditingController otpController = TextEditingController();
 
-  Future sendOtp(String fullPhoneNumber) async {
+  // 60-second Resend OTP countdown timer state
+  int resendOtpCountdown = 60;
+  bool canResendOtp = false;
+  Timer? _countdownTimer;
+
+  void startResendTimer() {
+    stopResendTimer();
+    resendOtpCountdown = 60;
+    canResendOtp = false;
+    update();
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (resendOtpCountdown > 1) {
+        resendOtpCountdown--;
+        update();
+      } else {
+        resendOtpCountdown = 0;
+        canResendOtp = true;
+        stopResendTimer();
+        update();
+      }
+    });
+  }
+
+  void stopResendTimer() {
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+  }
+
+  void resetOtpState() {
+    stopResendTimer();
+    isOtpSent = false;
+    canResendOtp = false;
+    resendOtpCountdown = 60;
+    otpController.clear();
+    errorMessage = null;
+    update();
+  }
+
+  Future resendOtp(String fullPhoneNumber) async {
+    if (!canResendOtp || isLoading) return;
+    await sendOtp(fullPhoneNumber, isResend: true);
+  }
+
+  Future sendOtp(String fullPhoneNumber, {bool isResend = false}) async {
     isLoading = true;
     errorMessage = null;
     update();
@@ -33,6 +77,7 @@ class AuthController extends GetxController {
     try {
       await _auth.verifyPhoneNumber(
         phoneNumber: fullPhoneNumber,
+        forceResendingToken: isResend ? resendToken : null,
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential);
           User? user = _auth.currentUser;
@@ -52,7 +97,12 @@ class AuthController extends GetxController {
           isOtpSent = true;
           isLoading = false;
           errorMessage = null;
+          startResendTimer();
           update();
+          Helpers.showSuccessSnackBar(
+            title: isResend ? "OTP Resent Successfully" : "OTP Sent Successfully",
+            msg: "A 6-digit verification code was sent to $fullPhoneNumber",
+          );
         },
         codeAutoRetrievalTimeout: (String verId) {
           verificationId = verId;
@@ -600,5 +650,13 @@ class AuthController extends GetxController {
     } else {
       Helpers.showSnackBar(msg: '${data['message']}');
     }
+  }
+
+  @override
+  void onClose() {
+    stopResendTimer();
+    phoneController.dispose();
+    otpController.dispose();
+    super.onClose();
   }
 }

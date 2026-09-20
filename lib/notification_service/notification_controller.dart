@@ -102,7 +102,7 @@ class PushNotificationController extends GetxController {
         return;
       }
     } else if (rawMessage is Map) {
-      message = Map<String, dynamic>.from(rawMessage as Map);
+      message = Map<String, dynamic>.from(rawMessage);
     } else {
       return;
     }

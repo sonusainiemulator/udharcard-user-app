@@ -159,105 +159,99 @@ class InvoiceScreen extends StatelessWidget {
                     VSpace(32.h),
                     Text("Payment Frequency", style: context.t.displayMedium),
                     VSpace(8.h),
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            invoiceController.groupVal = 1;
-                            invoiceController.update();
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 40.w,
-                                child: Radio<int>(
-                                  value: 1,
-                                  groupValue: invoiceController.groupVal,
-                                  fillColor: WidgetStatePropertyAll(
-                                    AppColors.mainColor,
+                    RadioGroup<int>(
+                      groupValue: invoiceController.groupVal,
+                      onChanged: (int? newValue) {
+                        if (newValue != null) {
+                          invoiceController.groupVal = newValue;
+                          invoiceController.update();
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              invoiceController.groupVal = 1;
+                              invoiceController.update();
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 40.w,
+                                  child: Radio<int>(
+                                    value: 1,
+                                    fillColor: WidgetStatePropertyAll(
+                                      AppColors.mainColor,
+                                    ),
                                   ),
-                                  onChanged: (int? newValue) {
-                                    invoiceController.groupVal = newValue!;
-                                    invoiceController.update();
-                                  },
                                 ),
-                              ),
-                              Text(
-                                "One Time",
-                                style: context.t.displayMedium?.copyWith(
-                                  fontSize: 16.sp,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        HSpace(32.w),
-                        InkWell(
-                          onTap: () {
-                            invoiceController.groupVal = 2;
-                            invoiceController.update();
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 40.w,
-                                child: Radio<int>(
-                                  value: 2,
-                                  groupValue: invoiceController.groupVal,
-                                  fillColor: WidgetStatePropertyAll(
-                                    AppColors.mainColor,
+                                Text(
+                                  "One Time",
+                                  style: context.t.displayMedium?.copyWith(
+                                    fontSize: 16.sp,
                                   ),
-                                  onChanged: (int? newValue) {
-                                    invoiceController.groupVal = newValue!;
-                                    invoiceController.update();
-                                  },
                                 ),
-                              ),
-                              Text(
-                                "Weekly",
-                                style: context.t.displayMedium?.copyWith(
-                                  fontSize: 16.sp,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        HSpace(32.w),
-                        InkWell(
-                          onTap: () {
-                            invoiceController.groupVal = 3;
-                            invoiceController.update();
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 40.w,
-                                child: Radio<int>(
-                                  value: 3,
-                                  groupValue: invoiceController.groupVal,
-                                  visualDensity: VisualDensity.compact,
-                                  fillColor: WidgetStatePropertyAll(
-                                    AppColors.mainColor,
+                          HSpace(32.w),
+                          InkWell(
+                            onTap: () {
+                              invoiceController.groupVal = 2;
+                              invoiceController.update();
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 40.w,
+                                  child: Radio<int>(
+                                    value: 2,
+                                    fillColor: WidgetStatePropertyAll(
+                                      AppColors.mainColor,
+                                    ),
                                   ),
-                                  onChanged: (int? newValue) {
-                                    invoiceController.groupVal = newValue!;
-                                    invoiceController.update();
-                                  },
                                 ),
-                              ),
-                              Text(
-                                "Monthly",
-                                style: context.t.displayMedium?.copyWith(
-                                  fontSize: 16.sp,
+                                Text(
+                                  "Weekly",
+                                  style: context.t.displayMedium?.copyWith(
+                                    fontSize: 16.sp,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                          HSpace(32.w),
+                          InkWell(
+                            onTap: () {
+                              invoiceController.groupVal = 3;
+                              invoiceController.update();
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 40.w,
+                                  child: Radio<int>(
+                                    value: 3,
+                                    visualDensity: VisualDensity.compact,
+                                    fillColor: WidgetStatePropertyAll(
+                                      AppColors.mainColor,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  "Monthly",
+                                  style: context.t.displayMedium?.copyWith(
+                                    fontSize: 16.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     VSpace(24.h),
                     if (invoiceController.groupVal == 1)

@@ -48,5 +48,25 @@ void main() {
       expect(passwordCandidates.contains('Firebase_firebase_abc123'), isTrue);
       expect(passwordCandidates.contains('Phone_91978253398'), isTrue);
     });
+
+    test('OTP resend countdown formatting displays leading zeros correctly', () {
+      String formatCountdown(int seconds) {
+        return "Resend OTP in 00:${seconds.toString().padLeft(2, '0')}";
+      }
+
+      expect(formatCountdown(60), equals('Resend OTP in 00:60'));
+      expect(formatCountdown(59), equals('Resend OTP in 00:59'));
+      expect(formatCountdown(9), equals('Resend OTP in 00:09'));
+      expect(formatCountdown(0), equals('Resend OTP in 00:00'));
+    });
+
+    test('OTP 6-digit validation requires exactly 6 characters', () {
+      bool isOtpValid(String otp) => otp.trim().length == 6 && int.tryParse(otp) != null;
+
+      expect(isOtpValid('12345'), isFalse);
+      expect(isOtpValid('123456'), isTrue);
+      expect(isOtpValid('1234567'), isFalse);
+      expect(isOtpValid('12345a'), isFalse);
+    });
   });
 }

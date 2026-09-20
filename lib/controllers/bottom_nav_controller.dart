@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:paysecure/controllers/app_controller.dart';
 import '../routes/page_index.dart';
 
 class BottomNavController extends GetxController {

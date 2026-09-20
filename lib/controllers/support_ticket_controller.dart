@@ -127,24 +127,23 @@ class SupportTicketController extends GetxController {
 
   final List<String> _fileNames = [];
 
-  FilePickerResult? result;
+  List<PlatformFile>? result;
   List<dynamic> selectedFilePaths = []; // Store all selected file paths
   List<http.MultipartFile> files = [];
 
   Future<void> pickFiles() async {
     try {
       result = await FilePicker.pickFiles(
-        allowMultiple: true,
         type: FileType.image,
       );
 
-      if (result != null) {
+      if (result != null && result!.isNotEmpty) {
         if (kDebugMode) {
-          // print("==============File paths: ${result!.paths}");
+          // print("==============File paths: ${result!.map((f) => f.path)}");
         }
-        _fileNames.addAll(result!.paths.map((path) => path!));
+        _fileNames.addAll(result!.map((file) => file.name));
         selectedFilePaths.addAll(
-          result!.paths.whereType<String>(),
+          result!.map((file) => file.path).whereType<String>(),
         ); // Add selected paths to the list
         for (int i = 0; i < selectedFilePaths.length; i++) {
           files.addAll([

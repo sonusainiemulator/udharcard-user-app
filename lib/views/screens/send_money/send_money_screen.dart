@@ -226,7 +226,7 @@ class SendMoneyScreen extends StatelessWidget {
                             width: 50.w,
                             child: Switch(
                               value: sendMoneyController.isChargeFrom,
-                              activeColor: AppColors.mainColor,
+                              activeThumbColor: AppColors.mainColor,
                               onChanged: (v) {
                                 try {
                                   sendMoneyController.isChargeFrom = v;

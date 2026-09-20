@@ -80,6 +80,79 @@ class Helpers {
     );
   }
 
+  /// Premium, elegant success notification for OTP and confirmations
+  static showSuccessSnackBar({
+    required String title,
+    required String msg,
+    int durationTime = 3,
+    SnackPosition snackPosition = SnackPosition.TOP,
+  }) {
+    if (_isToastVisible) {
+      Get.closeCurrentSnackbar();
+      _isToastVisible = false;
+    }
+
+    _isToastVisible = true;
+    Get.snackbar(
+      title,
+      msg,
+      snackPosition: snackPosition,
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      borderRadius: 14.r,
+      backgroundColor: const Color(0xFF0F766E),
+      colorText: Colors.white,
+      icon: Padding(
+        padding: EdgeInsets.only(left: 4.w),
+        child: Container(
+          padding: EdgeInsets.all(6.r),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.mark_email_read_rounded,
+            color: Colors.white,
+            size: 20.sp,
+          ),
+        ),
+      ),
+      titleText: Text(
+        title,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      messageText: Text(
+        msg,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.95),
+          fontSize: 13.sp,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      boxShadows: [
+        BoxShadow(
+          color: const Color(0xFF0F766E).withValues(alpha: 0.35),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ],
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutBack,
+      reverseAnimationCurve: Curves.easeInCubic,
+      animationDuration: const Duration(milliseconds: 350),
+      duration: Duration(seconds: durationTime),
+      snackbarStatus: (status) {
+        if (status == SnackbarStatus.CLOSED) {
+          _isToastVisible = false;
+        }
+      },
+    );
+  }
+
   /// hide keyboard automatically when click anywhere in screen
   static hideKeyboard() => FocusManager.instance.primaryFocus?.unfocus();
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.2.0+14] - 2026-09-20 19:25:00 IST
+
+### Upgraded
+- **Flutter SDK Support**: Upgraded Flutter SDK to the latest stable release (`v3.47.5`, Dart `3.13.4`).
+- **Flutter Environment Constraint**: Configured `pubspec.yaml` environment to `sdk: '>=3.7.2 <5.0.0'` and `flutter: '>=3.47.0'`.
+- **Dependencies Modernization**: Upgraded outdated dependencies to latest compatible versions (`file_picker: ^13.1.0`, `dio: ^5.11.1`, `firebase_core: ^4.15.0`, `firebase_auth: ^6.7.0`, `lottie: ^3.6.1`, `mobile_scanner: ^7.4.2`, `flutter_local_notifications: ^22.3.1`, `speech_to_text: ^7.5.0`, `razorpay_flutter: ^1.4.6`, `logger: ^2.8.0`, `emoji_picker_flutter: ^4.5.4`, `connectivity_plus: ^7.3.1`).
+- **FilePicker 13 Integration**: Modernized file picker handling in `support_ticket_controller.dart` to match `file_picker 13`'s `Future<List<PlatformFile>>` API.
+
+### Fixed & Cleaned
+- **Deprecations Removed**: Replaced deprecated `.withOpacity()` calls with modern `.withValues(alpha:)`.
+- **Controls Deprecations**: Migrated `Radio` widgets to `RadioGroup` and replaced `Switch.activeColor` with `activeThumbColor`.
+- **iOS AppDelegate**: Modernized `AppDelegate.swift` by removing redundant iOS 10 check and configuring notification delegates directly.
+- **Clean Verification**: All static analysis warnings resolved (`flutter analyze` shows 0 issues) and all unit tests verified (`flutter test` passes 6/6).
+
+## [2.1.8+13] - 2026-09-19
+
+### Added
+- **60-Second Resend OTP Timer**: Integrated a real-time 60-second countdown timer for both Login and Registration screens with automatic button enablement upon expiry and Firebase Auth `forceResendingToken` resend support.
+- **Pinput with SMS Auto-Fill & Reading**: Added `pinput: ^6.0.2` and `smart_auth: ^3.2.0` with `SmsRetrieverImpl` using Android SMS User Consent API and iOS One-Time-Code autofill hints for seamless 6-digit OTP autofill and instant submission.
+- **Premium Success Notification**: Added `Helpers.showSuccessSnackBar` featuring emerald teal gradient, animated icons, and subtle elevation to replace any incorrect red header alerts upon OTP dispatch.
+- **Unit Tests**: Added test cases for OTP countdown formatting, digit sanitization, and 6-digit validation in `test/auth_login_test.dart`.
+
+### Fixed
+- **Sent OTP Header Alert**: Fixed incorrect red alert being displayed when an OTP is dispatched; now shows a reassuring, elegant confirmation banner.
+- **Widget Test**: Fixed boilerplate counter smoke test in `test/widget_test.dart` to validate Udharcard app branding and configuration.
+
 ## [2.1.7+12] - 2026-07-28
 
 ### Added

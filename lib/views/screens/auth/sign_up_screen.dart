@@ -14,9 +14,31 @@ import '../../widgets/app_button.dart';
 import '../../widgets/custom_textfield.dart';
 import '../../widgets/spacing.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:pinput/pinput.dart';
+import 'package:smart_auth/smart_auth.dart';
+import '../../../utils/services/sms_retriever_impl.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  late final SmsRetrieverImpl _smsRetrieverImpl;
+
+  @override
+  void initState() {
+    _smsRetrieverImpl = SmsRetrieverImpl(SmartAuth.instance);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _smsRetrieverImpl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,28 +165,120 @@ class SignUpScreen extends StatelessWidget {
                           ),
                         ] else ...[
                           _buildOtpInfoCard(controller, storedLanguage, t),
-                          VSpace(24.h),
-                          CustomTextField(
-                            hintext: storedLanguage['6-Digit OTP'] ?? "6-Digit OTP",
-                            isPrefixIcon: true,
-                            prefixIcon: 'lock',
-                            keyboardType: TextInputType.number,
-                            controller: controller.otpController,
-                            onChanged: (v) {
-                              if (controller.errorMessage != null) {
-                                controller.errorMessage = null;
-                              }
-                              controller.update();
-                            },
+                          VSpace(28.h),
+                          Center(
+                            child: Directionality(
+                              textDirection: TextDirection.ltr,
+                              child: Pinput(
+                                length: 6,
+                                controller: controller.otpController,
+                                smsRetriever: _smsRetrieverImpl,
+                                keyboardType: TextInputType.number,
+                                hapticFeedbackType: HapticFeedbackType.lightImpact,
+                                autofillHints: const [AutofillHints.oneTimeCode],
+                                defaultPinTheme: PinTheme(
+                                  width: 48.w,
+                                  height: 54.h,
+                                  textStyle: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Get.isDarkMode
+                                        ? AppColors.whiteColor
+                                        : AppColors.black30,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppThemes.getFillColor(),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    border: Border.all(
+                                      color: AppThemes.getSliderInactiveColor(),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                ),
+                                focusedPinTheme: PinTheme(
+                                  width: 48.w,
+                                  height: 54.h,
+                                  textStyle: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Get.isDarkMode
+                                        ? AppColors.whiteColor
+                                        : AppColors.black30,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.mainColor
+                                        .withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    border: Border.all(
+                                      color: AppColors.mainColor,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                                submittedPinTheme: PinTheme(
+                                  width: 48.w,
+                                  height: 54.h,
+                                  textStyle: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Get.isDarkMode
+                                        ? AppColors.whiteColor
+                                        : AppColors.black30,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppThemes.getFillColor(),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    border: Border.all(
+                                      color: AppColors.mainColor
+                                          .withValues(alpha: 0.6),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                                errorPinTheme: PinTheme(
+                                  width: 48.w,
+                                  height: 54.h,
+                                  textStyle: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFFDC2626),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF2F2),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    border: Border.all(
+                                      color: const Color(0xFFDC2626),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                                onChanged: (v) {
+                                  if (controller.errorMessage != null) {
+                                    controller.errorMessage = null;
+                                  }
+                                  controller.update();
+                                },
+                                onCompleted: (pin) async {
+                                  Helpers.hideKeyboard();
+                                  String fullPhone =
+                                      "${controller.phoneCode}${controller.phoneController.text.trim()}";
+                                  await controller.verifyOtpAndLogin(
+                                    pin,
+                                    fullPhone,
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                           if (controller.errorMessage != null &&
                               controller.errorMessage!.isNotEmpty)
                             _buildInlineError(controller.errorMessage!, t),
-                          VSpace(32.h),
+                          VSpace(28.h),
                           Material(
                             color: Colors.transparent,
                             child: AppButton(
-                              text: storedLanguage['Verify & Register'] ?? "Verify & Register",
+                              text: storedLanguage['Verify & Register'] ??
+                                  "Verify & Register",
                               isLoading: controller.isLoading ? true : false,
                               bgColor: controller.otpController.text.length < 6
                                   ? AppThemes.getInactiveColor()
@@ -172,32 +286,107 @@ class SignUpScreen extends StatelessWidget {
                               onTap: controller.otpController.text.length < 6
                                   ? null
                                   : controller.isLoading
-                                  ? null
-                                  : () async {
-                                      Helpers.hideKeyboard();
-                                      String fullPhone = "${controller.phoneCode}${controller.phoneController.text.trim()}";
-                                      await controller.verifyOtpAndLogin(
-                                        controller.otpController.text.trim(),
-                                        fullPhone,
-                                      );
-                                    },
+                                      ? null
+                                      : () async {
+                                          Helpers.hideKeyboard();
+                                          String fullPhone =
+                                              "${controller.phoneCode}${controller.phoneController.text.trim()}";
+                                          await controller.verifyOtpAndLogin(
+                                            controller.otpController.text.trim(),
+                                            fullPhone,
+                                          );
+                                        },
                             ),
                           ),
                           VSpace(20.h),
+                          // ───── Resend OTP Countdown & Action ─────
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (!controller.canResendOtp) ...[
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 14.w,
+                                    vertical: 7.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.mainColor
+                                        .withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(20.r),
+                                    border: Border.all(
+                                      color: AppColors.mainColor
+                                          .withValues(alpha: 0.2),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.timer_outlined,
+                                        size: 16.sp,
+                                        color: AppColors.mainColor,
+                                      ),
+                                      HSpace(6.w),
+                                      Text(
+                                        "Resend OTP in 00:${controller.resendOtpCountdown.toString().padLeft(2, '0')}",
+                                        style: t.bodyMedium?.copyWith(
+                                          color: AppColors.mainColor,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13.sp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ] else ...[
+                                Text(
+                                  storedLanguage["Didn't receive the code?"] ??
+                                      "Didn't receive the code?",
+                                  style: t.bodyMedium?.copyWith(
+                                    color: AppThemes.getParagraphColor(),
+                                    fontSize: 13.sp,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: controller.isLoading
+                                      ? null
+                                      : () async {
+                                          Helpers.hideKeyboard();
+                                          String fullPhone =
+                                              "${controller.phoneCode}${controller.phoneController.text.trim()}";
+                                          await controller.resendOtp(fullPhone);
+                                        },
+                                  child: Text(
+                                    storedLanguage['Resend OTP'] ?? "Resend OTP",
+                                    style: t.bodyMedium?.copyWith(
+                                      color: AppColors.mainColor,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          VSpace(8.h),
                           Align(
                             alignment: Alignment.center,
-                            child: TextButton(
+                            child: TextButton.icon(
                               onPressed: () {
-                                controller.isOtpSent = false;
-                                controller.otpController.clear();
-                                controller.errorMessage = null;
-                                controller.update();
+                                controller.resetOtpState();
                               },
-                              child: Text(
+                              icon: Icon(
+                                Icons.edit_outlined,
+                                size: 15.sp,
+                                color: AppThemes.getHintColor(),
+                              ),
+                              label: Text(
                                 storedLanguage['Change Phone Number'] ??
                                     "Change Phone Number",
                                 style: t.bodyMedium?.copyWith(
                                   color: AppThemes.getHintColor(),
+                                  fontSize: 13.sp,
                                 ),
                               ),
                             ),

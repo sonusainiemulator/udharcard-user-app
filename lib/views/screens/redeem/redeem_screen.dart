@@ -183,7 +183,7 @@ class RedeemScreen extends StatelessWidget {
                             width: 50.w,
                             child: Switch(
                               value: redeemCodeController.isChargeFrom,
-                              activeColor: AppColors.mainColor,
+                              activeThumbColor: AppColors.mainColor,
                               onChanged: (v) {
                                 try {
                                   redeemCodeController.isChargeFrom = v;

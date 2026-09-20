@@ -178,7 +178,7 @@ class RequestMoneyPreviewScreen extends StatelessWidget {
                                   width: 50.w,
                                   child: Switch(
                                     value: requestMoneyController.isChargeFrom,
-                                    activeColor: AppColors.mainColor,
+                                    activeThumbColor: AppColors.mainColor,
                                     onChanged: (v) {
                                       try {
                                         requestMoneyController.isChargeFrom = v;
