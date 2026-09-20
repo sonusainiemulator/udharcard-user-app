@@ -36,6 +36,17 @@
     <string>We need speech recognition to transcribe your voice commands and entries.</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>app-1-91651925903-ios-0bead75cde4bab14db8dfa</string>
+        </array>
+      </dict>
+    </array>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     <key>UIApplicationSceneManifest</key>
