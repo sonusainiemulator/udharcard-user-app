@@ -1,11 +1,14 @@
 # Changelog
 
-## [2.2.0+15] - 2026-09-21 00:37:00 IST
+## [2.2.0+15] - 2026-09-21 01:18:00 IST
 
 ### Added & Fixed
+- **Firebase Phone Auth reCAPTCHA URL Scheme**: Added `CFBundleURLTypes` with `app-1-91651925903-ios-0bead75cde4bab14db8dfa` to `ios/Runner/Info.plist` for Firebase phone authentication reCAPTCHA redirect on iOS.
 - **App Store Privacy Purpose Strings**: Added `NSMicrophoneUsageDescription` and `NSSpeechRecognitionUsageDescription` to `Info.plist` required by Apple for Gemini AI Voice Mode and Speech-to-Text APIs.
 - **App Store Export Compliance**: Added `ITSAppUsesNonExemptEncryption` set to `false` in `Info.plist` for instant TestFlight processing without manual compliance forms.
-- **Build Increment**: Bumped build number to 15 (`2.2.0+15`) for TestFlight re-upload.
+- **Flutter SDK Modernization**: Upgraded Flutter SDK to `v3.47.5` (Dart `3.13.4`), modernized outdated packages (`file_picker: ^13.1.0`, `firebase_core: ^4.15.0`, `firebase_auth: ^6.7.0`, `dio: ^5.11.1`), and resolved all deprecation warnings (`withValues`, `RadioGroup`, `activeThumbColor`).
+- **Binary Releases**: Built and published `app-debug.apk` directly to GitHub Releases.
+- **Build Increment**: Bumped build number to 15 (`2.2.0+15`) for TestFlight re-upload and GitHub Release.
 
 ## [2.2.0+14] - 2026-09-20 19:25:00 IST
 
