@@ -15,6 +15,7 @@ import '../../../../utils/services/localstorage/keys.dart';
 import '../../widgets/app_custom_dropdown.dart';
 import '../../widgets/custom_textfield.dart';
 import '../../widgets/spacing.dart';
+import '../../widgets/merchant_status_badge.dart';
 import '../mobile_scanner/mobile_scanner_screen.dart';
 
 class MakePaymentScreen extends StatelessWidget {
@@ -71,6 +72,7 @@ class MakePaymentScreen extends StatelessWidget {
                               );
                             } else {
                               makePaymentController.checkRecipientmessage = "";
+                              makePaymentController.checkedMerchantData = {};
                               makePaymentController.update();
                             }
                           },
@@ -107,6 +109,18 @@ class MakePaymentScreen extends StatelessWidget {
                                   : AppColors.greenColor,
                         ),
                       ),
+                    if (makePaymentController.checkRecipientmessage.isNotEmpty &&
+                        !makePaymentController.checkRecipientmessage
+                            .toLowerCase()
+                            .contains('merchant not found')) ...[
+                      VSpace(10.h),
+                      MerchantStatusBadge(
+                        merchantData:
+                            makePaymentController.checkedMerchantData,
+                        isCompact: false,
+                        showTiming: true,
+                      ),
+                    ],
                     VSpace(32.h),
                     Container(
                       height: 50.h,

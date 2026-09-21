@@ -307,12 +307,14 @@ class AuthController extends GetxController {
     }
 
     String generatedUsername = "usr_$cleanDigits";
-    String deterministicPassword = "PaySecure_$cleanDigits";
+    String deterministicPassword = "UdharCard_$cleanDigits";
+    String legacyPassword = "PaySecure_$cleanDigits";
     String firebasePassword = "Firebase_$firebaseUid";
     String phonePassword = "Phone_$cleanDigits";
 
     List<String> passwordCandidates = [
       deterministicPassword,
+      legacyPassword,
       firebasePassword,
       phonePassword,
     ];
@@ -321,6 +323,7 @@ class AuthController extends GetxController {
       generatedUsername,
       rawPhone,
       fullPhoneNumber,
+      "phone_$cleanDigits@udharcard.shop",
       "phone_$cleanDigits@paysecure.com",
     ];
 
@@ -359,7 +362,7 @@ class AuthController extends GetxController {
         "firstname": "Phone",
         "lastname": "User",
         "username": generatedUsername,
-        "email": "phone_$cleanDigits@paysecure.com",
+        "email": "phone_$cleanDigits@udharcard.shop",
         "phone_code": phoneCode,
         "phone": rawPhone,
         "country": countryName,

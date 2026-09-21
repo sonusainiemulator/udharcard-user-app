@@ -2,6 +2,25 @@
 
 ## [2.2.0+18] - 2026-09-21 17:17:00 IST
 
+### Added & Market-Ready Features
+- **Merchant Opening & Closing Status**:
+  - Implemented `MerchantStatusHelper` with real-time evaluation of `is_shop_online`, opening/closing schedules, and weekly closed days.
+  - Created reusable `MerchantStatusBadge` widget supporting both compact pill badges and full warning alert banners.
+  - Integrated live merchant status into `CustomerUdharMerchantsScreen`, `CustomerUdharLedgerScreen`, and `MakePaymentScreen`.
+- **Direct Razorpay Udhar Settlement**:
+  - Integrated native Razorpay payment flow directly into `CustomerUdharController` and `CustomerUdharLedgerScreen` with fast amount selector chips (₹100, ₹500, ₹1000, Full Balance) and QR store scanner fallback.
+  - Added modern payment success modal with instant transaction summary and digital receipt generation.
+- **WhatsApp Digital Receipt Sharing**:
+  - Created `ReceiptShareHelper` providing standardized, branded transaction receipts with one-tap sharing to merchants via WhatsApp.
+- **Enhanced Empty States & Onboarding**:
+  - Modernized `CustomerUdharMerchantsScreen` empty state with clear illustration, "Scan Store QR Code" call to action, and interactive "How Udharcard Works" guide sheet.
+- **Home Screen Navigation Upgrade**:
+  - Replaced placeholder "Upcoming" button with dedicated, functional quick-access grid: "My Udhar", "Scan & Pay", "Voice AI", "Send Money", "Deposit", "Withdraw", "History", and "Support".
+- **Udharcard Brand Modernization**:
+  - Upgraded authentication registration in `AuthController` to `@udharcard.shop` domain and `UdharCard_` usernames while keeping backwards compatibility with legacy accounts.
+- **Comprehensive Unit Tests**:
+  - Added unit test suite `test/merchant_status_helper_test.dart` verifying all time parsing, weekly closed days, and edge case fallbacks (10/10 tests passing across suite).
+
 ### Fixed
 - **Login OTP Screen Bug**: Cleared stale `errorMessage` in `sendOtp()` — "The phone field is required" error no longer bleeds onto the OTP entry screen after phone verification starts.
 - **Firebase `verificationFailed` & catch**: Now also resets `isOtpSent = false` so UI correctly stays on phone-input step when Firebase rejects the number.

@@ -129,33 +129,51 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildQuickFeatures(BuildContext context, AppController appCtrl, TextTheme t, Map storedLanguage) {
     List<Map<String, dynamic>> features = [
       {
-        "name": "Voice Mode",
-        "icon": Icons.mic,
+        "name": storedLanguage['My Udhar'] ?? "My Udhar",
+        "icon": Icons.credit_card_rounded,
+        "route": RoutesName.customerUdharMerchantsScreen,
+        "enabled": true,
+      },
+      {
+        "name": storedLanguage['Scan & Pay'] ?? "Scan & Pay",
+        "icon": Icons.qr_code_scanner_rounded,
+        "route": RoutesName.qrPaymentScreen,
+        "enabled": true,
+      },
+      {
+        "name": "Voice AI",
+        "icon": Icons.mic_rounded,
         "route": RoutesName.voiceModeScreen,
         "enabled": true,
       },
       {
-        "name": storedLanguage['Deposit'] ?? "Deposit",
-        "icon": Icons.account_balance_wallet,
-        "route": RoutesName.depositScreen,
-        "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].deposit.toString() == '1',
-      },
-      {
         "name": storedLanguage['Send Money'] ?? "Send Money",
-        "icon": Icons.send,
+        "icon": Icons.send_rounded,
         "route": RoutesName.sendMoneyScreen,
         "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].transfer.toString() == '1',
       },
       {
+        "name": storedLanguage['Deposit'] ?? "Deposit",
+        "icon": Icons.account_balance_wallet_rounded,
+        "route": RoutesName.depositScreen,
+        "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].deposit.toString() == '1',
+      },
+      {
         "name": storedLanguage['Withdraw'] ?? "Withdraw",
-        "icon": Icons.money_off,
+        "icon": Icons.money_off_rounded,
         "route": RoutesName.withdrawScreen,
         "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].payout.toString() == '1',
       },
       {
-        "name": "Upcoming",
-        "icon": Icons.timer_outlined,
-        "route": RoutesName.comingSoonScreen,
+        "name": storedLanguage['History'] ?? "History",
+        "icon": Icons.history_rounded,
+        "route": RoutesName.transactionScreen,
+        "enabled": true,
+      },
+      {
+        "name": storedLanguage['Support'] ?? "Support",
+        "icon": Icons.headset_mic_rounded,
+        "route": RoutesName.supportTicketListScreen,
         "enabled": true,
       },
     ];

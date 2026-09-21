@@ -86,6 +86,7 @@ class MakePaymentController extends GetxController {
   }
 
   String checkRecipientmessage = "";
+  Map<String, dynamic> checkedMerchantData = {};
   Future checkMerchant({required String merchant}) async {
     isGettingAmountCheck = true;
     update();
@@ -94,11 +95,21 @@ class MakePaymentController extends GetxController {
     );
     isGettingAmountCheck = false;
     amountCheckList = [];
+    checkedMerchantData = {};
     update();
     var data = jsonDecode(response.body);
     if (response.statusCode == 200) {
       if (data['status'] == 'success') {
-        checkRecipientmessage = data['message']['message'];
+        if (data['message'] is Map) {
+          checkRecipientmessage = data['message']['message'] ?? '';
+        } else {
+          checkRecipientmessage = data['message']?.toString() ?? '';
+        }
+        if (data['data'] != null && data['data'] is Map<String, dynamic>) {
+          checkedMerchantData = Map<String, dynamic>.from(data['data']);
+        } else if (data['message'] != null && data['message'] is Map<String, dynamic>) {
+          checkedMerchantData = Map<String, dynamic>.from(data['message']);
+        }
         update();
       }
     } else {

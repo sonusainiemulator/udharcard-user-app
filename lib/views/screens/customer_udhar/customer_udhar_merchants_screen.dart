@@ -7,6 +7,8 @@ import '../../../utils/services/localstorage/hive.dart';
 import '../../../utils/services/localstorage/keys.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/spacing.dart';
+import '../../widgets/merchant_status_badge.dart';
+import '../mobile_scanner/mobile_scanner_screen.dart';
 
 class CustomerUdharMerchantsScreen extends StatefulWidget {
   const CustomerUdharMerchantsScreen({super.key});
@@ -47,18 +49,173 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
               onRefresh: () async {
                 await controller.getMerchantsList();
               },
-              child: Stack(
-                children: [
-                  ListView(),
-                  Center(
-                    child: Text(
-                      "No active Udhar cards found",
-                      style: t.bodyMedium?.copyWith(
-                        color: AppThemes.getBlack50Color(),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    VSpace(20.h),
+                    // Decorative Card Container
+                    Container(
+                      width: 120.r,
+                      height: 120.r,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.mainColor.withValues(alpha: 0.15),
+                            AppColors.mainColor.withValues(alpha: 0.05),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        border: Border.all(
+                          color: AppColors.mainColor.withValues(alpha: 0.25),
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.credit_card_rounded,
+                          size: 54.sp,
+                          color: AppColors.mainColor,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    VSpace(24.h),
+                    Text(
+                      "No Active Udhar Cards Yet",
+                      style: t.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20.sp,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    VSpace(10.h),
+                    Text(
+                      "Visit any Udharcard partner store or scan the merchant's QR code to activate your digital credit limit instantly.",
+                      style: t.bodyMedium?.copyWith(
+                        color: AppThemes.getBlack50Color(),
+                        fontSize: 13.sp,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    VSpace(32.h),
+                    // Primary CTA
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.mainColor,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, 50.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        elevation: 3,
+                      ),
+                      onPressed: () {
+                        Get.to(() => const MobileScannerScreen(
+                              isFromMakePaymentPage: true,
+                            ));
+                      },
+                      icon: Icon(Icons.qr_code_scanner_rounded, size: 22.sp),
+                      label: Text(
+                        "Scan Store QR Code",
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    VSpace(14.h),
+                    // Secondary CTA / Explainer
+                    TextButton.icon(
+                      onPressed: () {
+                        Get.bottomSheet(
+                          Container(
+                            padding: EdgeInsets.all(24.w),
+                            decoration: BoxDecoration(
+                              color: Get.isDarkMode ? AppColors.darkCardColor : Colors.white,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                            ),
+                            child: SafeArea(
+                              top: false,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: 40.w,
+                                      height: 4.h,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(2.r),
+                                      ),
+                                    ),
+                                  ),
+                                  VSpace(16.h),
+                                  Text(
+                                    "How Udharcard Works",
+                                    style: TextStyle(
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  VSpace(12.h),
+                                  _buildHowItWorksStep(
+                                    number: "1",
+                                    title: "Scan Shop QR Code",
+                                    desc: "Scan the merchant's QR at checkout counter in partner stores.",
+                                  ),
+                                  VSpace(10.h),
+                                  _buildHowItWorksStep(
+                                    number: "2",
+                                    title: "Instant Digital Credit",
+                                    desc: "Merchant approves credit limit directly into your account.",
+                                  ),
+                                  VSpace(10.h),
+                                  _buildHowItWorksStep(
+                                    number: "3",
+                                    title: "Track & Settle Anytime",
+                                    desc: "View clear ledger balance and pay anytime using UPI or Cards.",
+                                  ),
+                                  VSpace(16.h),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.mainColor,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12.r),
+                                        ),
+                                      ),
+                                      onPressed: () => Get.back(),
+                                      child: const Text("Got it"),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          isScrollControlled: true,
+                        );
+                      },
+                      icon: Icon(Icons.info_outline_rounded, size: 18.sp, color: AppColors.mainColor),
+                      label: Text(
+                        "How does Udharcard work?",
+                        style: TextStyle(
+                          color: AppColors.mainColor,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -87,6 +244,9 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                       arguments: {
                         'merchant_id': item['merchant_id'],
                         'shop_name': shopName,
+                        'merchant_data': item is Map<String, dynamic>
+                            ? item
+                            : (item != null ? Map<String, dynamic>.from(item) : null),
                       },
                     );
                   },
@@ -126,21 +286,37 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
-                                    child: Text(
-                                      shopName.toString().toUpperCase(),
-                                      style: t.bodyLarge?.copyWith(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.2,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          shopName.toString().toUpperCase(),
+                                          style: t.bodyLarge?.copyWith(
+                                            color: Colors.white,
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.2,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        VSpace(6.h),
+                                        MerchantStatusBadge(
+                                          merchantData: item is Map<String, dynamic>
+                                              ? item
+                                              : (item != null ? Map<String, dynamic>.from(item) : null),
+                                          isCompact: true,
+                                          showTiming: true,
+                                          onCard: true,
+                                        ),
+                                      ],
                                     ),
                                   ),
+                                  SizedBox(width: 8.w),
                                   Container(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 10.w,
@@ -161,7 +337,7 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                                   ),
                                 ],
                               ),
-                              VSpace(25.h),
+                              VSpace(16.h),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
@@ -257,6 +433,53 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
           );
         },
       ),
+    );
+  }
+
+  Widget _buildHowItWorksStep({
+    required String number,
+    required String title,
+    required String desc,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 12.r,
+          backgroundColor: AppColors.mainColor,
+          child: Text(
+            number,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              VSpace(2.h),
+              Text(
+                desc,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: AppThemes.getBlack50Color(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

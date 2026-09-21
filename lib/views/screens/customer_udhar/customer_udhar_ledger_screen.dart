@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:paysecure/controllers/bindings/controller_index.dart';
 import '../../../../config/app_colors.dart';
 import '../../../themes/themes.dart';
-import '../../widgets/app_button.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/custom_textfield.dart';
 import '../../widgets/spacing.dart';
+import '../../widgets/merchant_status_badge.dart';
+import '../mobile_scanner/mobile_scanner_screen.dart';
+import '../../../utils/services/helpers.dart';
 
 class CustomerUdharLedgerScreen extends StatefulWidget {
   const CustomerUdharLedgerScreen({super.key});
@@ -20,6 +22,7 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
   final CustomerUdharController _controller = Get.find<CustomerUdharController>();
   late int merchantId;
   late String shopName;
+  Map<String, dynamic>? initialMerchantData;
 
   @override
   void initState() {
@@ -27,6 +30,7 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
     final args = Get.arguments as Map<String, dynamic>;
     merchantId = args['merchant_id'];
     shopName = args['shop_name'];
+    initialMerchantData = args['merchant_data'];
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.getLedgerList(merchantId: merchantId, page: 1);
@@ -79,78 +83,252 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
     );
   }
 
-  void _showPaymentSheet(double amount) {
+  void _showPaymentSheet(double totalAmount) {
+    final TextEditingController amountController =
+        TextEditingController(text: totalAmount.toStringAsFixed(2));
+
     Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-        decoration: BoxDecoration(
-          color: Get.isDarkMode ? AppColors.darkCardColor : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.r),
-            topRight: Radius.circular(20.r),
-          ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                "Settle Outstanding Balance",
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.sp,
+      StatefulBuilder(
+        builder: (context, setSheetState) {
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? AppColors.darkCardColor : Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20.r),
+                topRight: Radius.circular(20.r),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
                     ),
-                textAlign: TextAlign.center,
-              ),
-              VSpace(8.h),
-              Text(
-                "Pay to $shopName",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppThemes.getBlack50Color(), fontSize: 14.sp),
-              ),
-              VSpace(6.h),
-              Text(
-                "₹${amount.toStringAsFixed(2)}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.mainColor,
+                    VSpace(12.h),
+                    Text(
+                      "Settle Outstanding Balance",
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.sp,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    VSpace(4.h),
+                    Text(
+                      "Pay to $shopName",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppThemes.getBlack50Color(),
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                    VSpace(16.h),
+                    // Amount Input
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: Get.isDarkMode
+                            ? Colors.black.withValues(alpha: 0.2)
+                            : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(color: AppColors.mainColor.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            "₹",
+                            style: TextStyle(
+                              fontSize: 26.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.mainColor,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: TextField(
+                              controller: amountController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(decimal: true),
+                              style: TextStyle(
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Get.isDarkMode ? Colors.white : Colors.black87,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: "0.00",
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    VSpace(10.h),
+                    // Quick chips
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ActionChip(
+                          label: Text(
+                            "Full: ₹${totalAmount.toStringAsFixed(0)}",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: AppColors.mainColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          backgroundColor: AppColors.mainColor.withValues(alpha: 0.1),
+                          side: BorderSide(color: AppColors.mainColor.withValues(alpha: 0.3)),
+                          onPressed: () {
+                            setSheetState(() {
+                              amountController.text = totalAmount.toStringAsFixed(2);
+                            });
+                          },
+                        ),
+                        if (totalAmount > 500) ...[
+                          SizedBox(width: 8.w),
+                          ActionChip(
+                            label: Text(
+                              "₹500",
+                              style: TextStyle(fontSize: 12.sp),
+                            ),
+                            onPressed: () {
+                              setSheetState(() {
+                                amountController.text = "500.00";
+                              });
+                            },
+                          ),
+                        ],
+                        if (totalAmount > 1000) ...[
+                          SizedBox(width: 8.w),
+                          ActionChip(
+                            label: Text(
+                              "₹1000",
+                              style: TextStyle(fontSize: 12.sp),
+                            ),
+                            onPressed: () {
+                              setSheetState(() {
+                                amountController.text = "1000.00";
+                              });
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                    VSpace(16.h),
+                    // Primary Pay Online Button
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.mainColor,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, 48.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        elevation: 2,
+                      ),
+                      onPressed: () {
+                        final enteredAmount =
+                            double.tryParse(amountController.text.trim()) ?? 0.0;
+                        if (enteredAmount <= 0) {
+                          Helpers.showSnackBar(
+                            msg: "Please enter a valid amount",
+                            title: "Invalid Amount",
+                            bgColor: Colors.red,
+                          );
+                          return;
+                        }
+                        Get.back();
+                        _controller.payUdharViaRazorpay(
+                          amount: enteredAmount,
+                          merchantId: merchantId,
+                          shopName: shopName,
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.payment_rounded, size: 20.sp),
+                          SizedBox(width: 8.w),
+                          Text(
+                            "Pay Now (UPI / Cards / NetBanking)",
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    VSpace(10.h),
+                    // Secondary: Scan Merchant QR
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.mainColor,
+                        side: BorderSide(color: AppColors.mainColor),
+                        minimumSize: Size(double.infinity, 44.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      onPressed: () {
+                        Get.back();
+                        Get.to(() => const MobileScannerScreen(
+                              isFromMakePaymentPage: true,
+                            ));
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.qr_code_scanner_rounded, size: 18.sp),
+                          SizedBox(width: 8.w),
+                          Text(
+                            "Scan Store QR Code",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    VSpace(8.h),
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        minimumSize: Size.zero,
+                        padding: EdgeInsets.symmetric(vertical: 6.h),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        "Cancel",
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              VSpace(16.h),
-              AppButton(
-                text: "Pay via QR Code / UPI",
-                onTap: () {
-                  Get.back();
-                  // Redirect user to their QR Scanner/payment flow
-                  Get.toNamed('/qrCodeScreen');
-                },
-              ),
-              VSpace(6.h),
-              TextButton(
-                onPressed: () => Get.back(),
-                style: TextButton.styleFrom(
-                  minimumSize: Size.zero,
-                  padding: EdgeInsets.symmetric(vertical: 4.h),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  "Cancel",
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
-      isScrollControlled: false,
+      isScrollControlled: true,
     );
   }
 
@@ -205,10 +383,22 @@ class _CustomerUdharLedgerScreenState extends State<CustomerUdharLedgerScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
+                  // Merchant Shop Status Banner
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+                    child: MerchantStatusBadge(
+                      merchantData: controller.merchantDetails.isNotEmpty
+                          ? controller.merchantDetails
+                          : initialMerchantData,
+                      isCompact: false,
+                      showTiming: true,
+                    ),
+                  ),
+
                   // Balance summary card
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.all(16.w),
+                  Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.all(16.w),
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
                   color: Get.isDarkMode ? AppColors.darkCardColor : Colors.white,
