@@ -20,7 +20,7 @@ import '../../widgets/search_dialog.dart';
 import '../../widgets/spacing.dart';
 import '../home/home_screen.dart';
 
-class TransactionScreen extends StatelessWidget {
+class TransactionScreen extends StatefulWidget {
   final bool? isFromHomePage;
   final bool? isFromWallet;
   const TransactionScreen({
@@ -30,11 +30,67 @@ class TransactionScreen extends StatelessWidget {
   });
 
   @override
+  State<TransactionScreen> createState() => _TransactionScreenState();
+}
+
+class _TransactionScreenState extends State<TransactionScreen> {
+  String _selectedFilter = 'All';
+
+  Widget _buildFilterTab(String title, bool isSelected) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedFilter = title;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.mainColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(8.r),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.mainColor.withValues(alpha: 0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              color: isSelected
+                  ? Colors.white
+                  : (Get.isDarkMode ? Colors.white70 : Colors.black87),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     TextTheme t = Theme.of(context).textTheme;
     var storedLanguage = HiveHelp.read(Keys.languageData) ?? {};
     return GetBuilder<TransactionController>(
       builder: (transactionCtrl) {
+        final filteredList = transactionCtrl.transactionList.where((item) {
+          if (_selectedFilter == 'Purchases') {
+            return item.type.toString().trim() == '-';
+          } else if (_selectedFilter == 'Payments') {
+            return item.type.toString().trim() == '+';
+          }
+          return true;
+        }).toList();
+
         return PopScope(
           canPop: false,
           onPopInvokedWithResult: (didPop, result) {
@@ -48,7 +104,7 @@ class TransactionScreen extends StatelessWidget {
               storedLanguage,
               context,
               transactionCtrl,
-              isFromHomePage,
+              widget.isFromHomePage,
             ),
             body: RefreshIndicator(
               color: AppColors.mainColor,
@@ -73,20 +129,50 @@ class TransactionScreen extends StatelessWidget {
                   padding: Dimensions.kDefaultPadding,
                   child: Column(
                     children: [
-                      VSpace(20.h),
+                      VSpace(12.h),
+                      // Segmented Filter Bar: All | Purchases | Payments
+                      Container(
+                        padding: EdgeInsets.all(4.w),
+                        decoration: BoxDecoration(
+                          color: Get.isDarkMode
+                              ? AppColors.darkCardColor
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: Get.isDarkMode
+                                ? Colors.white12
+                                : Colors.grey.shade300,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            _buildFilterTab("All", _selectedFilter == 'All'),
+                            _buildFilterTab(
+                              "Purchases",
+                              _selectedFilter == 'Purchases',
+                            ),
+                            _buildFilterTab(
+                              "Payments",
+                              _selectedFilter == 'Payments',
+                            ),
+                          ],
+                        ),
+                      ),
+                      VSpace(16.h),
                       transactionCtrl.isLoading
                           ? buildTransactionLoader(
                             itemCount: 20,
                             isReverseColor: true,
                           )
-                          : transactionCtrl.transactionList.isEmpty
+                          : filteredList.isEmpty
                           ? Helpers.notFound()
                           : ListView.builder(
                             physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
-                            itemCount: transactionCtrl.transactionList.length,
+                            itemCount: filteredList.length,
                             itemBuilder: (context, i) {
-                              var data = transactionCtrl.transactionList[i];
+                              var data = filteredList[i];
                               return InkWell(
                                 borderRadius: Dimensions.kBorderRadius,
                                 onTap: () {
@@ -250,115 +336,118 @@ class TransactionScreen extends StatelessWidget {
                                     ),
                                   );
                                 },
-                                child: Ink(
-                                  width: double.maxFinite,
-                                  padding: EdgeInsets.symmetric(vertical: 10.h),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 45.h,
-                                        height: 45.h,
-                                        padding: EdgeInsets.all(12.h),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.mainColor.withValues(
-                                            alpha: .1,
-                                          ),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Image.asset(
-                                          "$rootImageDir/approved.webp",
-                                          color: AppColors.mainColor,
-                                        ),
-                                      ),
-                                      HSpace(12.w),
-                                      Expanded(
-                                        child: Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  flex: 14,
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        data.remarks.toString(),
-                                                        maxLines: 1,
-                                                        overflow:
-                                                            TextOverflow.fade,
-                                                        style: t.bodyMedium,
-                                                      ),
-                                                      VSpace(3.h),
-                                                      Text(
-                                                        data.createdTime
-                                                            .toString(),
+                                child: Builder(
+                                  builder: (context) {
+                                    final isPayment = data.type.toString().trim() == '+';
+                                    final rawRemarks = data.remarks?.toString() ?? '';
+                                    final storeTitle = (rawRemarks.isNotEmpty && rawRemarks != 'null')
+                                        ? rawRemarks
+                                        : (isPayment ? 'Udhar Payment' : 'Store Purchase');
 
-                                                        maxLines: 1,
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                        style: t.bodySmall
-                                                            ?.copyWith(
-                                                              color:
-                                                                  AppThemes.getBlack50Color(),
-                                                            ),
-                                                      ),
-                                                    ],
+                                    String formattedDate = data.createdTime.toString();
+                                    try {
+                                      final dt = DateTime.parse(data.createdTime.toString());
+                                      formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(dt);
+                                    } catch (_) {}
+
+                                    return Ink(
+                                      width: double.maxFinite,
+                                      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 4.w),
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: 44.h,
+                                            height: 44.h,
+                                            decoration: BoxDecoration(
+                                              color: isPayment
+                                                  ? AppColors.greenColor.withValues(alpha: .12)
+                                                  : AppColors.redColor.withValues(alpha: .12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              isPayment ? Icons.arrow_downward_rounded : Icons.storefront_rounded,
+                                              color: isPayment ? AppColors.greenColor : AppColors.redColor,
+                                              size: 22.sp,
+                                            ),
+                                          ),
+                                          HSpace(12.w),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  storeTitle,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: t.bodyMedium?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 14.sp,
                                                   ),
                                                 ),
-                                                HSpace(3.w),
-                                                Flexible(
-                                                  flex: 7,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                      data.type +
-                                                          "${data.amount.toString()} ${data.currency.toString().replaceAll("null", "")}",
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: t.bodyMedium?.copyWith(
-                                                        color:
-                                                            data.type == "+"
-                                                                ? AppColors
-                                                                    .greenColor
-                                                                : AppColors
-                                                                    .redColor,
+                                                VSpace(4.h),
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                                      decoration: BoxDecoration(
+                                                        color: isPayment
+                                                            ? AppColors.greenColor.withValues(alpha: .12)
+                                                            : Colors.orange.withValues(alpha: .15),
+                                                        borderRadius: BorderRadius.circular(4.r),
+                                                      ),
+                                                      child: Text(
+                                                        isPayment ? "Payment" : "Purchase",
+                                                        style: TextStyle(
+                                                          fontSize: 10.sp,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: isPayment ? AppColors.greenColor : Colors.deepOrange,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
+                                                    HSpace(6.w),
+                                                    Expanded(
+                                                      child: Text(
+                                                        formattedDate,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: t.bodySmall?.copyWith(
+                                                          fontSize: 11.sp,
+                                                          color: AppThemes.getBlack50Color(),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
-                                            Container(
-                                              margin: EdgeInsets.only(
-                                                top: 15.h,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                border: Border(
-                                                  bottom: BorderSide(
-                                                    color:
-                                                        Get.isDarkMode
-                                                            ? AppColors.black70
-                                                            : AppColors.black20,
-                                                    width: .2,
-                                                  ),
+                                          ),
+                                          HSpace(8.w),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                "${isPayment ? '+' : '-'} ₹${Helpers.numberFormatWithAsFixed2('', data.amount.toString())}",
+                                                style: t.bodyMedium?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14.sp,
+                                                  color: isPayment ? AppColors.greenColor : AppColors.redColor,
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
+                                              VSpace(4.h),
+                                              Text(
+                                                "Bal: Settled",
+                                                style: t.bodySmall?.copyWith(
+                                                  fontSize: 10.sp,
+                                                  color: AppThemes.getBlack50Color(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    );
+                                  },
                                 ),
                               );
                             },

@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0+19] - 2026-09-22 00:37:00 IST
+
+### Added — Digital Udhar Passbook (Market-Ready Release)
+- **Bottom Navigation Redesign**: 4-destination nav bar (Home, History, Scan & Pay, Profile) with centred QR scan FAB button replacing old 3-tab layout.
+- **Scanner Enhancements**: Flash/torch toggle via `ValueListenableBuilder<MobileScannerState>` and manual merchant + amount entry fallback in `MobileScannerScreen`.
+- **History Screen**: Converted `TransactionScreen` to `StatefulWidget`; added segmented filter bar (All / Purchases / Payments); each entry shows store name, formatted date, ±amount indicator, and type badge.
+- **Profile — Udhar Credit Card**: Identity-focused profile header with copyable Customer ID, KYC status badge (using `VerificationController.categoryNameList` approved status), dynamic "Udhar Credit Limit" card showing total limit, outstanding, and available credit aggregated across all merchants, active store count, and linked UPI account display.
+
+### Fixed
+- `bottom_nav_bar.dart`: Removed duplicate/corrupt `return PopScope(` statement and restored valid bracket structure; removed unused `app_constants` import; fixed `const` on `LinearGradient` that referenced non-const `AppColors.mainColor`.
+- `profile_setting_screen.dart`: Replaced non-existent `Profile.identityVerification` field with `VerificationController.categoryNameList` approved check; added missing `Helpers` import; removed unused `intl` import.
+
 ## [2.2.0+18] - 2026-09-21 17:17:00 IST
 
 ### Added & Market-Ready Features

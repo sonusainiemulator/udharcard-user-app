@@ -7,7 +7,6 @@ class BottomNavController extends GetxController {
   List<Widget> get screens {
     return [
       HomeScreen(),
-      VirtualCardScreen(),
       TransactionScreen(),
       const ProfileSettingScreen(),
     ];
@@ -21,7 +20,9 @@ class BottomNavController extends GetxController {
   }
 
   void changeScreen(int index) {
-    selectedIndex = index;
-    update();
+    if (index >= 0 && index < screens.length) {
+      selectedIndex = index;
+      update();
+    }
   }
 }

@@ -1,4 +1,3 @@
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,7 +9,6 @@ import '../../../controllers/bottom_nav_controller.dart';
 import '../../../controllers/exchange_controller.dart';
 import '../../../controllers/profile_controller.dart';
 import '../../../notification_service/notification_controller.dart';
-import '../../../utils/app_constants.dart';
 import '../../../utils/services/pop_app.dart';
 import '../mobile_scanner/mobile_scanner_screen.dart';
 
@@ -67,179 +65,62 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
                     child: Scaffold(
                       body: controller.currentScreen,
                       bottomNavigationBar: Container(
-                        height: 84.h,
-                        padding: EdgeInsets.only(
-                          top: 33.h,
-                          left: 24.w,
-                          right: 24.w,
-                        ),
                         decoration: BoxDecoration(
+                          color: appCtrl.isDarkMode() == true
+                              ? AppColors.darkCardColor
+                              : Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  appCtrl.isDarkMode() == true
-                                      ? AppColors.darkBgColor
-                                      : Colors.grey.shade100,
-                              blurRadius: 10,
-                              spreadRadius: 5,
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 16,
+                              offset: const Offset(0, -4),
                             ),
                           ],
-                          image: DecorationImage(
-                            colorFilter: ColorFilter.mode(
-                              appCtrl.isDarkMode() == true
-                                  ? AppColors.darkCardColor
-                                  : AppColors
-                                      .whiteColor, // Apply a red tint with 50% opacity
-                              BlendMode.srcATop, // Use 'srcATop' blend mode
+                        ),
+                        child: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 8.h,
                             ),
-                            image: AssetImage(
-                              "$rootImageDir/bottom_nav_shape.webp",
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceAround,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                _buildNavItem(
+                                  icon: Icons.home_rounded,
+                                  label: "Home",
+                                  isSelected: controller.selectedIndex == 0,
+                                  isDark: appCtrl.isDarkMode() == true,
+                                  onTap: () => controller.changeScreen(0),
+                                ),
+                                _buildNavItem(
+                                  icon: Icons.history_rounded,
+                                  label: "History",
+                                  isSelected: controller.selectedIndex == 1,
+                                  isDark: appCtrl.isDarkMode() == true,
+                                  onTap: () => controller.changeScreen(1),
+                                ),
+                                _buildScanAndPayItem(
+                                  appCtrl.isDarkMode() == true,
+                                ),
+                                _buildNavItem(
+                                  icon: Icons.person_rounded,
+                                  label: "Profile",
+                                  isSelected: controller.selectedIndex == 2,
+                                  isDark: appCtrl.isDarkMode() == true,
+                                  onTap: () => controller.changeScreen(2),
+                                ),
+                              ],
                             ),
-                            fit: BoxFit.cover,
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            InkResponse(
-                              onTap: () {
-                                controller.changeScreen(0);
-                              },
-                              child: Container(
-                                padding: EdgeInsets.only(
-                                  left: 10.w,
-                                  right: 10.w,
-                                  top: 10.h,
-                                  bottom: 10.h,
-                                ),
-                                child: Image.asset(
-                                  controller.selectedIndex == 0
-                                      ? "$rootImageDir/home1.webp"
-                                      : "$rootImageDir/home.webp",
-                                  height: 24.h,
-                                  color: controller.selectedIndex == 0
-                                      ? AppColors.mainColor
-                                      : appCtrl.isDarkMode() == true
-                                          ? AppColors.whiteColor
-                                          : AppColors.blackColor,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            InkResponse(
-                              onTap: () {
-                                controller.changeScreen(1);
-                              },
-                              child: Container(
-                                padding: EdgeInsets.only(
-                                  left: 10.w,
-                                  right: 60.w, // Space for center FAB
-                                  top: 10.h,
-                                  bottom: 10.h,
-                                ),
-                                child: Image.asset(
-                                  controller.selectedIndex == 1
-                                      ? "$rootImageDir/wallet1.webp"
-                                      : "$rootImageDir/wallet.webp",
-                                  height: controller.selectedIndex == 1 ? 28.h : 26.h,
-                                  color: controller.selectedIndex == 1
-                                      ? AppColors.mainColor
-                                      : appCtrl.isDarkMode() == true
-                                          ? AppColors.whiteColor
-                                          : AppColors.blackColor,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            InkResponse(
-                              onTap: () {
-                                controller.changeScreen(2);
-                              },
-                              child: Container(
-                                padding: EdgeInsets.only(
-                                  right: 10.w,
-                                  left: 60.w, // Space for center FAB
-                                  top: 10.h,
-                                  bottom: 10.h,
-                                ),
-                                child: Image.asset(
-                                  "$rootImageDir/transaction.webp",
-                                  height: 26.h,
-                                  color: controller.selectedIndex == 2
-                                      ? AppColors.mainColor
-                                      : appCtrl.isDarkMode() == true
-                                          ? AppColors.whiteColor
-                                          : AppColors.blackColor,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            InkResponse(
-                              onTap: () {
-                                controller.changeScreen(3);
-                              },
-                              child: Container(
-                                padding: EdgeInsets.only(
-                                  left: 10.w,
-                                  right: 10.w,
-                                  top: 10.h,
-                                  bottom: 10.h,
-                                ),
-                                child: Image.asset(
-                                  controller.selectedIndex == 3
-                                      ? "$rootImageDir/person2.webp"
-                                      : "$rootImageDir/person.webp",
-                                  height: controller.selectedIndex == 3 ? 20.h : 23.h,
-                                  color: controller.selectedIndex == 3
-                                      ? AppColors.mainColor
-                                      : appCtrl.isDarkMode() == true
-                                          ? AppColors.whiteColor
-                                          : AppColors.blackColor,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    floatingActionButton:
-                        exchangeCtrl.amountFocusNode.hasFocus
-                            ? SizedBox(height: 0, width: 0)
-                            : Padding(
-                              padding: EdgeInsets.only(top: 50.h),
-                              child: AvatarGlow(
-                                animate: true,
-                                startDelay: const Duration(milliseconds: 1000),
-                                glowColor:
-                                    appCtrl.isDarkMode() == true
-                                        ? AppColors.black80
-                                        : AppColors.black30,
-                                glowShape: BoxShape.circle,
-                                curve: Curves.fastOutSlowIn,
-                                glowRadiusFactor: .5,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            appCtrl.isDarkMode() == true
-                                                ? AppColors.darkBgColor
-                                                : Color(0xffD6CCF9),
-                                        blurRadius: 10,
-                                        spreadRadius: 3,
-                                        offset: Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipOval(child: MoneyTransferButton()),
-                                ),
-                              ),
-                            ),
-                    floatingActionButtonLocation:
-                        FloatingActionButtonLocation.centerDocked,
+                    ),
                   ),
-                ));
+                );
               },
             );
           },
@@ -247,70 +128,89 @@ class appCtrlBottomNavBarState extends State<BottomNavBar> {
       },
     );
   }
-}
 
-class MoneyTransferButton extends StatefulWidget {
-  @override
-  appCtrlMoneyTransferButtonState createState() =>
-      appCtrlMoneyTransferButtonState();
-}
-
-class appCtrlMoneyTransferButtonState extends State<MoneyTransferButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController appCtrlcontroller;
-  late Animation<double> appCtrlsizeAnimation;
-  late Animation<double> appCtrlbounceAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Initialize the animation controller
-    appCtrlcontroller = AnimationController(
-      duration: Duration(seconds: 2), // Total duration of the animation
-      vsync: this,
-    )..repeat(reverse: true); // Repeats the animation
-
-    // Size animation (small to large)
-    appCtrlsizeAnimation = Tween<double>(begin: 0.7, end: 1).animate(
-      CurvedAnimation(parent: appCtrlcontroller, curve: Curves.easeInOut),
-    );
-
-    // Bounce animation (up and down movement)
-    appCtrlbounceAnimation = Tween<double>(begin: 0, end: 3).animate(
-      CurvedAnimation(parent: appCtrlcontroller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    appCtrlcontroller
-        .dispose(); // Dispose the controller when the widget is removed
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: () {
+  Widget _buildScanAndPayItem(bool isDark) {
+    return GestureDetector(
+      onTap: () {
         Get.to(() => const MobileScannerScreen(isFromMakePaymentPage: true));
       },
-      backgroundColor: AppColors.mainColor,
-      child: AnimatedBuilder(
-        animation: appCtrlcontroller,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0, -appCtrlbounceAnimation.value), // Bounce effect
-            child: Transform.scale(
-              scale: appCtrlsizeAnimation.value, // Shrink and grow effect
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 46.h,
+            height: 46.h,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.mainColor,
+                  const Color(0xff1E4E8C),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.mainColor.withValues(alpha: 0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Center(
               child: Icon(
                 Icons.qr_code_scanner_rounded,
                 color: Colors.white,
-                size: 26.sp,
+                size: 24.sp,
               ),
             ),
-          );
-        },
+          ),
+          SizedBox(height: 3.h),
+          Text(
+            "Scan & Pay",
+            style: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.mainColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    final color = isSelected
+        ? AppColors.mainColor
+        : (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 24.sp),
+            SizedBox(height: 3.h),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
