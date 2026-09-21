@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.0+18] - 2026-09-21 17:17:00 IST
+
+### Fixed
+- **Login OTP Screen Bug**: Cleared stale `errorMessage` in `sendOtp()` — "The phone field is required" error no longer bleeds onto the OTP entry screen after phone verification starts.
+- **Firebase `verificationFailed` & catch**: Now also resets `isOtpSent = false` so UI correctly stays on phone-input step when Firebase rejects the number.
+- **OTP controller reset**: `otpController` is cleared before each new OTP send to prevent stale input.
+
+### Improved
+- **Create Account Screen Redesign**: Premium gradient hero header with Udharcard logo, rounded card layout with fade+slide entrance animation, unified phone input row, smaller country flag (`+91`), polished OTP info card with circular icon badge.
+
 ## [2.2.0+17] - 2026-09-21 15:35:00 IST
 
 ### Removed & Replaced
