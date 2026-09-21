@@ -10,7 +10,6 @@ import '../../../config/dimensions.dart';
 import '../../../routes/routes_name.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/spacing.dart';
-import 'package:lottie/lottie.dart';
 import 'onbording_data.dart';
 
 class OnbordingScreen extends StatefulWidget {
@@ -60,74 +59,16 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (i != 3)
-                          Padding(
+                        Padding(
                             padding: Dimensions.kDefaultPadding,
                             child: Center(
-                              child: onBordingDataList[i].isLottie
-                                  ? Lottie.network(
-                                      onBordingDataList[i].imagePath,
-                                      height: i == 0 ? 390.h : 340.h,
-                                      width: i == 0 ? 390.h : 340.h,
-                                      fit: BoxFit.contain,
-                                    )
-                                  : Image.asset(
-                                      onBordingDataList[i].imagePath,
-                                      height: i == 0 ? 390.h : 340.h,
-                                      width: i == 0 ? 390.h : 340.h,
-                                      fit: BoxFit.fitHeight,
-                                    ),
-                            ),
-                          ),
-                        if (i == 3)
-                          Column(
-                            children: [
-                              SizedBox(
-                                width: 380.w,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Container(
-                                      width: 300.h,
-                                      height: 300.h,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: -100.h,
-                                      left: 0,
-                                      right: 0,
-                                      bottom: 0,
-                                      child: Image.asset(
-                                        onBordingDataList[i].imagePath,
-                                        height: 300.h,
-                                        width: 300.h,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 10.h,
-                                      left: 70.w,
-                                      child: Container(
-                                        width: 35.h,
-                                        height: 35.h,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.mainColor,
-                                          borderRadius: BorderRadius.only(
-                                            bottomLeft: Radius.circular(18.r),
-                                            bottomRight: Radius.circular(2.r),
-                                            topLeft: Radius.circular(2.5.r),
-                                            topRight: Radius.circular(2.5.r),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              child: Image.asset(
+                                onBordingDataList[i].imagePath,
+                                height: 340.h,
+                                width: 340.h,
+                                fit: BoxFit.fitHeight,
                               ),
-                            ],
+                            ),
                           ),
                         VSpace(59.h),
                         Padding(

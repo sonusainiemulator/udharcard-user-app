@@ -16,27 +16,21 @@ class OnBordingData {
 
 List<OnBordingData> onBordingDataList = [
   OnBordingData(
-    imagePath: "https://assets10.lottiefiles.com/packages/lf20_9n6u5p4v.json",
-    title: "Voice Mode with AI",
-    description: "Talk to Udharcard using Gemini AI to manage your app hands-free with Hindi audio alerts.",
-    isLottie: true,
-  ),
-  OnBordingData(
     imagePath: "$rootImageDir/onbording_1.webp",
-    title: "Send Money More Wisely",
+    title: "Scan & Pay Any Store",
     description:
-        "Lorem Ipsum is simply dummy text of the\nprinting and typesetting industry.",
+        "Pay your favourite stores instantly by scanning their QR code — no cash needed, no hassle.",
   ),
   OnBordingData(
     imagePath: "$rootImageDir/onbording_2.webp",
-    title: "Smart Money Management",
+    title: "Your Digital Udhar Passbook",
     description:
-        "Lorem Ipsum is simply dummy text of the\nprinting and typesetting industry.",
+        "Track your credit limit, outstanding balance, and every transaction with every store — all in one place.",
   ),
   OnBordingData(
     imagePath: "$rootImageDir/onbording_3.webp",
-    title: "Easiest way to Send Money",
+    title: "Send & Settle Anytime",
     description:
-        "Lorem Ipsum is simply dummy text of the\nprinting and typesetting industry.",
+        "Pay off your udhar balance directly from the app using Razorpay — fast, secure, and hassle-free.",
   ),
 ];
