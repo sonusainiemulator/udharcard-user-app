@@ -14,6 +14,7 @@ import '../../../utils/services/localstorage/hive.dart';
 import '../../../utils/services/localstorage/keys.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/spacing.dart';
+import '../mobile_scanner/mobile_scanner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -141,11 +142,18 @@ class _HomeScreenState extends State<HomeScreen>
         "enabled": true,
       },
       {
-        "name": "Voice AI",
-        "icon": Icons.mic_rounded,
-        "route": RoutesName.voiceModeScreen,
+        "name": storedLanguage['Pay Store'] ?? "Pay Store",
+        "icon": Icons.storefront_rounded,
+        "route": RoutesName.makePaymentScreen,
         "enabled": true,
       },
+      // Note: Voice AI is commented out / hidden per user request
+      // {
+      //   "name": "Voice AI",
+      //   "icon": Icons.mic_rounded,
+      //   "route": RoutesName.voiceModeScreen,
+      //   "enabled": false,
+      // },
       {
         "name": storedLanguage['Send Money'] ?? "Send Money",
         "icon": Icons.send_rounded,
@@ -194,7 +202,13 @@ class _HomeScreenState extends State<HomeScreen>
         var feature = features[index];
         return InkWell(
           borderRadius: BorderRadius.circular(12.r),
-          onTap: () => Get.toNamed(feature['route']),
+          onTap: () {
+            if (feature['route'] == RoutesName.qrPaymentScreen) {
+              Get.to(() => const MobileScannerScreen(isFromMakePaymentPage: true));
+            } else {
+              Get.toNamed(feature['route']);
+            }
+          },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

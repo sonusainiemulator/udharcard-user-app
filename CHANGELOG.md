@@ -14,8 +14,9 @@
   - Created `ReceiptShareHelper` providing standardized, branded transaction receipts with one-tap sharing to merchants via WhatsApp.
 - **Enhanced Empty States & Onboarding**:
   - Modernized `CustomerUdharMerchantsScreen` empty state with clear illustration, "Scan Store QR Code" call to action, and interactive "How Udharcard Works" guide sheet.
-- **Home Screen Navigation Upgrade**:
-  - Replaced placeholder "Upcoming" button with dedicated, functional quick-access grid: "My Udhar", "Scan & Pay", "Voice AI", "Send Money", "Deposit", "Withdraw", "History", and "Support".
+- **Home Screen Navigation & Feature Optimization**:
+  - Replaced placeholder "Upcoming" button and hidden non-essential experimental features (Voice AI commented out per user request).
+  - Maintained complete, high-utility 8-action grid: "My Udhar", "Scan & Pay", "Pay Store" (`MakePayment`), "Send Money", "Deposit", "Withdraw", "History", and "Support".
 - **Udharcard Brand Modernization**:
   - Upgraded authentication registration in `AuthController` to `@udharcard.shop` domain and `UdharCard_` usernames while keeping backwards compatibility with legacy accounts.
 - **Universal QR Code Recognition & Multi-Format Parsing**:
