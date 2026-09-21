@@ -74,6 +74,7 @@ class AuthController extends GetxController {
   Future sendOtp(String fullPhoneNumber, {bool isResend = false}) async {
     isLoading = true;
     errorMessage = null;
+    otpController.clear();
     update();
     
     try {
@@ -89,6 +90,7 @@ class AuthController extends GetxController {
         },
         verificationFailed: (FirebaseAuthException e) {
           isLoading = false;
+          isOtpSent = false;
           errorMessage = e.message ?? "Verification failed";
           update();
           Helpers.showSnackBar(msg: "Verification failed: ${e.message}", title: "Error!");
@@ -98,7 +100,8 @@ class AuthController extends GetxController {
           resendToken = forceResendingToken;
           isOtpSent = true;
           isLoading = false;
-          errorMessage = null;
+          errorMessage = null; // ← explicitly clear any stale errors
+          otpController.clear(); // ← reset OTP input on new send
           startResendTimer();
           update();
           Helpers.showSuccessSnackBar(
@@ -113,6 +116,7 @@ class AuthController extends GetxController {
       );
     } catch (e) {
       isLoading = false;
+      isOtpSent = false;
       errorMessage = "Error sending OTP: $e";
       update();
       Helpers.showSnackBar(msg: "Error sending OTP: $e", title: "Error!");
