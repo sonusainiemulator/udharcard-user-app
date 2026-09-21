@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.2.0+16] - 2026-09-21 15:10:00 IST
+
+### Fixed & Configured
+- **iOS 27.0 UIScene Lifecycle Support**: Implemented `SceneDelegate.swift` inheriting `FlutterSceneDelegate`, updated `AppDelegate.swift` to adopt `FlutterImplicitEngineDelegate` and `didInitializeImplicitFlutterEngine`, and added `UIApplicationSceneManifest` configuration to `Info.plist` to eliminate immediate startup crashes on iOS 27.
+- **Firebase iOS Configuration**: Generated and added `ios/Runner/GoogleService-Info.plist` matching Firebase project `udharcard-app` (`com.udharcard.user`) and configured `firebase.json` with iOS platform mappings and bundle resource linkage in `project.pbxproj`.
+- **Startup Crash Guarding**: Added individual `try/catch` error boundaries around `dotenv.load`, `Stripe.instance.applySettings()`, `initHive()`, and `LocalNotificationService().initNotification()` in `lib/main.dart` to ensure background service initialization errors do not crash the app before `runApp()`.
+- **Environment Key Parsing**: Cleaned trailing whitespace and empty lines from `STRIPE_PUBLISHABLE_KEY` in `.env` to prevent corrupted key extraction in `flutter_dotenv`.
+- **iOS 27 Simulator Runtime**: Provisioned and validated iOS 27.0 simulator runtime (`iPhone 17`) with Impeller Metal rendering backend.
+
 ## [2.2.0+15] - 2026-09-21 01:18:00 IST
 
 ### Added & Fixed

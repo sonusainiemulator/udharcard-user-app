@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -27,18 +26,37 @@ void main() async {
   } catch (e) {
     debugPrint("Firebase initialization failed: $e");
   }
+
   try {
     await dotenv.load(fileName: ".env");
-  } catch (e, s) {
-    throw Exception('Error loading .env file: $e,$s');
+  } catch (e) {
+    debugPrint("Warning: Error loading .env file: $e");
   }
-  Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? 'DEFAULT_KEY';
-  await Future.wait([
-    Stripe.instance.applySettings(),
-    initHive(),
-    LocalNotificationService().initNotification(),
-    Future.delayed(const Duration(milliseconds: 300)),
-  ]);
+
+  try {
+    final stripeKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'];
+    if (stripeKey != null && stripeKey.trim().isNotEmpty && stripeKey != 'DEFAULT_KEY') {
+      Stripe.publishableKey = stripeKey.trim();
+      await Stripe.instance.applySettings();
+    } else {
+      debugPrint("Stripe publishable key missing or default, skipping applySettings");
+    }
+  } catch (e) {
+    debugPrint("Stripe initialization failed: $e");
+  }
+
+  try {
+    await initHive();
+  } catch (e) {
+    debugPrint("Hive initialization failed: $e");
+  }
+
+  try {
+    await LocalNotificationService().initNotification();
+  } catch (e) {
+    debugPrint("Notification service initialization failed: $e");
+  }
+
   runApp(const MyApp());
 }
 

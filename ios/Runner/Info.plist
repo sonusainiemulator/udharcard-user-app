@@ -54,7 +54,21 @@
       <key>UIApplicationSupportsMultipleScenes</key>
       <false/>
       <key>UISceneConfigurations</key>
-      <dict/>
+      <dict>
+        <key>UIWindowSceneSessionRoleApplication</key>
+        <array>
+          <dict>
+            <key>UISceneClassName</key>
+            <string>UIWindowScene</string>
+            <key>UISceneConfigurationName</key>
+            <string>flutter</string>
+            <key>UISceneDelegateClassName</key>
+            <string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+            <key>UISceneStoryboardFile</key>
+            <string>Main</string>
+          </dict>
+        </array>
+      </dict>
     </dict>
     <key>UILaunchStoryboardName</key>
     <string>LaunchScreen</string>
