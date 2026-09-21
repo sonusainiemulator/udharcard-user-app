@@ -134,25 +134,35 @@ class AppController extends GetxController {
   Future getBasicCtrl() async {
     isGettingBasicCtrl = true;
     update();
-    http.Response response = await AppControllerRepo.getBasicCtrl();
-    isGettingBasicCtrl = false;
-    basicCtrlList.clear();
-    update();
-    var data = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      if (data['status'] == 'success') {
-        if (data['message'] != null && data['message']['service'] != null) {
-          basicCtrlList.add(
-            basicCtrl.BasicCtrlModel.fromJson(data).message!.service!,
-          );
+    try {
+      http.Response response = await AppControllerRepo.getBasicCtrl();
+      basicCtrlList.clear();
+      if (response.statusCode == 200) {
+        dynamic data;
+        try {
+          data = jsonDecode(response.body);
+        } catch (e) {
+          debugPrint("Failed to decode basicCtrl JSON: $e");
+          return;
         }
-
-        update();
-      } else {
-        ApiStatus.checkStatus(data['status'], data['message']);
+        if (data is Map && data['status'] == 'success') {
+          if (data['message'] != null && data['message']['service'] != null) {
+            basicCtrlList.add(
+              basicCtrl.BasicCtrlModel.fromJson(
+                Map<String, dynamic>.from(data),
+              ).message!.service!,
+            );
+          }
+          update();
+        } else if (data is Map && data['status'] != null) {
+          ApiStatus.checkStatus(data['status'], data['message']);
+        }
       }
-    } else {
-      Helpers.showSnackBar(msg: '${data['message']}');
+    } catch (e) {
+      debugPrint("getBasicCtrl failed: $e");
+    } finally {
+      isGettingBasicCtrl = false;
+      update();
     }
   }
 }

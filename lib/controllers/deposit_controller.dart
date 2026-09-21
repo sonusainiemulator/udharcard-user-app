@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'profile_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:paysecure/utils/app_constants.dart';
 import '../config/app_colors.dart';
@@ -191,16 +190,15 @@ class DepositController extends GetxController {
     if (data.supportedCurrency != null) {
       supportedCurrencyList = data.supportedCurrency!;
       if (supportedCurrencyList.isNotEmpty) {
-        // check the stripe gateway and fixed currency for SDK's payment
-        if (gatewayCode.trim().toLowerCase() == "stripe") {
-          selectedCurrency = "USD";
-          supportedCurrencyList = ["USD"];
+        if (gatewayCode.trim().toLowerCase() == "razorpay" ||
+            gatewayCode.trim().toLowerCase() == "stripe") {
+          selectedCurrency = supportedCurrencyList.contains("INR")
+              ? "INR"
+              : supportedCurrencyList[0].toString();
           await getSelectedCurrencyData(selectedCurrency);
 
           update();
-        }
-        // if the payment gateway is other and not stripe
-        else {
+        } else {
           selectedCurrency = supportedCurrencyList[0].toString();
           await getSelectedCurrencyData(selectedCurrency);
         }
@@ -400,17 +398,7 @@ class DepositController extends GetxController {
     }
     //-----other payment and sdk payment
     else if (selectedGatewayType == 2) {
-      if (gatewayCode == "stripe") {
-        isLoadingPaymentSheet = true;
-        update();
-        await stripeDepositRequest();
-        isLoadingPaymentSheet = false;
-        update();
-      }
-      //  else if (gatewayCode == "paypal") {
-      //   makePaypalPaymentRequest();
-      // }
-      else if (gatewayCode == "razorpay") {
+      if (gatewayCode == "razorpay" || gatewayCode == "stripe") {
         isLoadingPaymentSheet = true;
         update();
         await razorPayPaymentRequest();
@@ -578,177 +566,98 @@ class DepositController extends GetxController {
     for (var i in allList) {
       // IF THE PARAMETERS FIELD IS EXIST
       if (i['parameters'] != null) {
-        if (i['code'].toString().trim().toLowerCase() == 'stripe') {
-          secretKeyStripe = i['parameters']['secret_key'];
-          publishableKeyStripe = i['parameters']['publishable_key'];
-        } else if (i['code'].toString().trim().toLowerCase() == 'razorpay') {
-          razorPayKey = i['parameters']['key_id'];
+        if (i['code'].toString().trim().toLowerCase() == 'razorpay') {
+          razorPayKey = i['parameters']['key_id'] ?? '';
         } else if (i['code'].toString().trim().toLowerCase() == 'paypal') {
-          paypalClientId = i['parameters']['cleint_id'];
-          paypalSecretKey = i['parameters']['secret'];
+          paypalClientId = i['parameters']['cleint_id'] ?? '';
+          paypalSecretKey = i['parameters']['secret'] ?? '';
         }
       }
     }
   }
 
-  // STRIPE
-  String secretKeyStripe = "";
-  String publishableKeyStripe = "";
   // RAZORPAY
   String razorPayKey = "";
   // PAYPAL
   String paypalClientId = "";
   String paypalSecretKey = "";
 
-  ///-------------------------Stripe Payment Integration
-  dynamic stripePaymentData;
-  var stripe = Stripe.instance;
-
-  Future<void> stripeDepositRequest() async {
-    try {
-      stripePaymentData = await stripePaymentCreate(
-        calculateAmount(sendAmount),
-        "USD",
-      );
-      await stripe.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          returnURL:
-              isSelectedGatewayIsLive
-                  ? "${AppConstants.baseUrl.split("/api").first}/success"
-                  : null,
-          paymentIntentClientSecret: stripePaymentData['client_secret'],
-          style: Get.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          merchantDisplayName: '${AppConstants.appName}',
-        ),
-      );
-
-      displayPaymentSheet();
-    } catch (e, s) {
-      Helpers.showSnackBar(msg: e.toString());
-      if (kDebugMode) {
-        print('Payment exception: $e$s');
-      }
-    }
-  }
-
-  Future displayPaymentSheet() async {
-    try {
-      await stripe
-          .presentPaymentSheet()
-          .then((newValue) async {
-            onPaymentDone(fields: {"utr": this.trxId});
-            stripePaymentData = null;
-          })
-          .onError((error, stackTrace) async {
-            if (kDebugMode) {
-              print(
-                'OnErrorException/DISPLAYPAYMENTSHEET==> $error $stackTrace',
-              );
-            }
-            _isLoading = false;
-            Get.dialog(
-              AlertDialog(
-                content: Container(
-                  height: 60.h,
-                  child: Center(
-                    child: Text(
-                      "Payment Cancelled!",
-                      style: TextStyle(color: AppColors.redColor),
-                    ),
-                  ),
-                ),
-              ),
-            );
-            update();
-          });
-    } on StripeException catch (e) {
-      Helpers.showSnackBar(msg: e.toString());
-      if (kDebugMode) {
-        print('StripeException/DISPLAYPAYMENTSHEET==> $e');
-      }
-      await Future.delayed(Duration(seconds: 3));
-      Get.back();
-    } catch (e) {
-      Helpers.showSnackBar(msg: e.toString());
-      if (kDebugMode) {
-        print('$e');
-      }
-    }
-  }
-
-  stripePaymentCreate(String amount, String currency) async {
-    try {
-      Map<String, dynamic> body = {'amount': amount, 'currency': currency};
-      var response = await http.post(
-        Uri.parse('https://api.stripe.com/v1/payment_intents'),
-        body: body,
-        headers: {
-          'Authorization': 'Bearer ' + "${secretKeyStripe}",
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      );
-      return jsonDecode(response.body);
-    } catch (err) {
-      Helpers.showSnackBar(msg: err.toString());
-      if (kDebugMode) {
-        print('err charging user: ${err.toString()}');
-      }
-      return {};
-    }
-  }
-
   // calculate Amount
   calculateAmount(String amount) {
-    final doubVal = double.parse(amount);
-    final calculatedAmount = (doubVal.toInt() * 100);
+    final doubVal = double.tryParse(amount) ?? 0.0;
+    final calculatedAmount = (doubVal * 100).toInt();
     return calculatedAmount.toString();
   }
 
-  ///----------------------Razor Payment Integration
+  ///----------------------Native Razorpay Payment Integration
   Razorpay? razorpay;
 
   listenRazorPay() {
-    razorpay =
-        Razorpay()
-          ..on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess)
-          ..on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError)
-          ..on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    razorpay = Razorpay()
+      ..on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess)
+      ..on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError)
+      ..on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    onPaymentDone(fields: {"utr": this.trxId});
+    onPaymentDone(fields: {"utr": response.paymentId ?? this.trxId});
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    print(response.message);
-    print(response.error);
-    // Handle payment failure
-    Get.dialog(AppPaymentFail(errorText: response.message!));
+    debugPrint("Razorpay Error: ${response.message} ${response.error}");
+    Get.dialog(AppPaymentFail(errorText: response.message ?? "Payment failed"));
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    // Handle external wallet payment
+    debugPrint("External wallet selected: ${response.walletName}");
   }
 
   Future razorPayPaymentRequest() async {
+    String keyToUse = razorPayKey.trim().isNotEmpty
+        ? razorPayKey.trim()
+        : (dotenv.env['RAZORPAY_KEY_ID']?.trim() ?? '');
+
+    ProfileController? profileCtrl;
+    try {
+      profileCtrl = Get.find<ProfileController>();
+    } catch (_) {}
+
+    String contact = profileCtrl?.phoneNumberEditingController.text.trim().isNotEmpty == true
+        ? profileCtrl!.phoneNumberEditingController.text.trim()
+        : '9876543210';
+    String email = profileCtrl?.userEmail.trim().isNotEmpty == true
+        ? profileCtrl!.userEmail.trim()
+        : 'user@udharcard.shop';
+    String name = profileCtrl?.userName.trim().isNotEmpty == true
+        ? profileCtrl!.userName.trim()
+        : AppConstants.appName;
+
     final options = {
-      // Replace with your actual Razorpay key
-      'key': razorPayKey,
+      'key': keyToUse,
       'amount': calculateAmount(sendAmount),
-      'name': 'Test',
-      'description': 'Test Payment',
-      'prefill': {'contact': '1234567890', 'email': 'test@gmail.com'},
+      'name': name,
+      'description': 'Deposit to ${AppConstants.appName}',
+      'prefill': {'contact': contact, 'email': email},
       'external': {
         'wallets': ['paytm'],
       },
-      'currency': '$selectedCurrency',
+      'currency': selectedCurrency.isNotEmpty ? selectedCurrency : 'INR',
     };
 
     try {
+      if (razorpay == null) {
+        listenRazorPay();
+      }
       razorpay!.open(options);
     } catch (e) {
-      Helpers.showSnackBar(msg: e.toString());
+      Helpers.showSnackBar(msg: "Razorpay error: $e");
     }
+  }
+
+  @override
+  void onClose() {
+    razorpay?.clear();
+    super.onClose();
   }
 }
 

@@ -36,6 +36,8 @@
     <string>We need speech recognition to transcribe your voice commands and entries.</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+    <key>GIDClientID</key>
+    <string>91651925903-mmutsd2fu0qrt8u35b22ou6hnrbrnc9t.apps.googleusercontent.com</string>
     <key>CFBundleURLTypes</key>
     <array>
       <dict>
@@ -44,6 +46,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>app-1-91651925903-ios-0bead75cde4bab14db8dfa</string>
+          <string>com.googleusercontent.apps.91651925903-mmutsd2fu0qrt8u35b22ou6hnrbrnc9t</string>
         </array>
       </dict>
     </array>

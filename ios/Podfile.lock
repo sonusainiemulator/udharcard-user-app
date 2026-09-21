@@ -139,66 +139,6 @@ PODS:
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
-  - Stripe (25.17.0):
-    - StripeApplePay (= 25.17.0)
-    - StripeCore (= 25.17.0)
-    - StripeIssuing (= 25.17.0)
-    - StripePayments (= 25.17.0)
-    - StripePaymentsUI (= 25.17.0)
-    - StripeUICore (= 25.17.0)
-  - stripe_ios (0.0.1):
-    - Flutter
-    - Stripe (~> 25.17.0)
-    - stripe_ios/stripe_ios (= 0.0.1)
-    - stripe_ios/stripe_objc (= 0.0.1)
-    - StripeApplePay (~> 25.17.0)
-    - StripeFinancialConnections (~> 25.17.0)
-    - StripePayments (~> 25.17.0)
-    - StripePaymentSheet (~> 25.17.0)
-    - StripePaymentsUI (~> 25.17.0)
-  - stripe_ios/stripe_ios (0.0.1):
-    - Flutter
-    - Stripe (~> 25.17.0)
-    - stripe_ios/stripe_objc
-    - StripeApplePay (~> 25.17.0)
-    - StripeFinancialConnections (~> 25.17.0)
-    - StripePayments (~> 25.17.0)
-    - StripePaymentSheet (~> 25.17.0)
-    - StripePaymentsUI (~> 25.17.0)
-  - stripe_ios/stripe_objc (0.0.1):
-    - Flutter
-    - Stripe (~> 25.17.0)
-    - StripeApplePay (~> 25.17.0)
-    - StripeFinancialConnections (~> 25.17.0)
-    - StripePayments (~> 25.17.0)
-    - StripePaymentSheet (~> 25.17.0)
-    - StripePaymentsUI (~> 25.17.0)
-  - StripeApplePay (25.17.0):
-    - StripeCore (= 25.17.0)
-  - StripeCore (25.17.0)
-  - StripeFinancialConnections (25.17.0):
-    - StripeCore (= 25.17.0)
-    - StripeUICore (= 25.17.0)
-  - StripeIssuing (25.17.0):
-    - StripeCore (= 25.17.0)
-    - StripePayments (= 25.17.0)
-    - StripePaymentsUI (= 25.17.0)
-  - StripePayments (25.17.0):
-    - StripeCore (= 25.17.0)
-    - StripePayments/Stripe3DS2 (= 25.17.0)
-  - StripePayments/Stripe3DS2 (25.17.0):
-    - StripeCore (= 25.17.0)
-  - StripePaymentSheet (25.17.0):
-    - StripeApplePay (= 25.17.0)
-    - StripeCore (= 25.17.0)
-    - StripePayments (= 25.17.0)
-    - StripePaymentsUI (= 25.17.0)
-  - StripePaymentsUI (25.17.0):
-    - StripeCore (= 25.17.0)
-    - StripePayments (= 25.17.0)
-    - StripeUICore (= 25.17.0)
-  - StripeUICore (25.17.0):
-    - StripeCore (= 25.17.0)
   - url_launcher_ios (0.0.1):
     - Flutter
   - webview_flutter_wkwebview (0.0.1):
@@ -225,7 +165,6 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - speech_to_text (from `.symlinks/plugins/speech_to_text/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
-  - stripe_ios (from `.symlinks/plugins/stripe_ios/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
@@ -254,15 +193,6 @@ SPEC REPOS:
     - razorpay-core-pod
     - razorpay-pod
     - RecaptchaInterop
-    - Stripe
-    - StripeApplePay
-    - StripeCore
-    - StripeFinancialConnections
-    - StripeIssuing
-    - StripePayments
-    - StripePaymentSheet
-    - StripePaymentsUI
-    - StripeUICore
 
 EXTERNAL SOURCES:
   connectivity_plus:
@@ -303,8 +233,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/speech_to_text/darwin"
   sqflite_darwin:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
-  stripe_ios:
-    :path: ".symlinks/plugins/stripe_ios/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   webview_flutter_wkwebview:
@@ -353,16 +281,6 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   speech_to_text: 3b313d98516d3d0406cea424782ec25470c59d19
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
-  Stripe: da4f210385ff97d786968eb751d5c0d5c47ba539
-  stripe_ios: 4cc4ead50c59fe63e0ef7507c3a3bae056f88abb
-  StripeApplePay: 7b1b6e86eb75be5d4bcf109c34224adf38000fe2
-  StripeCore: 60849de0ae448eb9a7ed4ee8208acce78832b255
-  StripeFinancialConnections: 280e67822cea7a8f89fb4fa97e6e7fb7293cff27
-  StripeIssuing: 7ece6d6d59ddb8636de386257175e71ced6966ad
-  StripePayments: befce228ec3545503c6ac54603b7e5a7cdb01a06
-  StripePaymentSheet: 11fe4afb439379bf905a09d99d99b80a6fac5cf1
-  StripePaymentsUI: c0e4426ec5aeaaedf3e4f32d30b77c4ef6e3dafa
-  StripeUICore: 124b860ab571114c2dec947d7b66a11e0d3238b6
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 

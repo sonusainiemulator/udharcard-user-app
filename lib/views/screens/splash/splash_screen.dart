@@ -21,12 +21,14 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  AppController appController = Get.find<AppController>();
+  late final AppController appController;
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
+    appController = Get.find<AppController>();
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -41,13 +43,18 @@ class _SplashScreenState extends State<SplashScreen>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
       HiveHelp.read(Keys.token) != null
           ? Get.offAllNamed(RoutesName.bottomNavBar)
           : HiveHelp.read(Keys.isNewUser) != null
           ? Get.offAllNamed(RoutesName.loginScreen)
           : Get.offAllNamed(RoutesName.onbordingScreen);
     });
-    AppController.to.getBasicCtrl();
+    try {
+      AppController.to.getBasicCtrl();
+    } catch (e) {
+      debugPrint("AppController.getBasicCtrl error on splash: $e");
+    }
 
     super.initState();
   }
@@ -154,7 +161,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ColorizeAnimatedText(
                         'Udhar Card',
                         speed: Duration(milliseconds: 400),
-                        textStyle: context.t.titleLarge!.copyWith(
+                        textStyle: (context.t.titleLarge ?? const TextStyle()).copyWith(
                           fontSize: 38.sp,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,

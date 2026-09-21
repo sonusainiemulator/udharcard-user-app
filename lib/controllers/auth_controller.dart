@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -150,7 +152,13 @@ class AuthController extends GetxController {
   // GOOGLE SIGN-IN
   // ─────────────────────────────────────────────
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  static const String _googleClientId =
+      '91651925903-mmutsd2fu0qrt8u35b22ou6hnrbrnc9t.apps.googleusercontent.com';
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: Platform.isIOS ? _googleClientId : null,
+    serverClientId: _googleClientId,
+  );
 
   Future<void> signInWithGoogle() async {
     isLoading = true;
@@ -183,6 +191,18 @@ class AuthController extends GetxController {
         errorMessage = "Google Sign-In failed. Please try again.";
         update();
       }
+    } on PlatformException catch (e) {
+      isLoading = false;
+      if (e.code == 'sign_in_canceled') {
+        debugPrint("Google Sign-In cancelled by user.");
+      } else {
+        errorMessage = "Google Sign-In: ${e.message ?? e.code}";
+      }
+      update();
+    } on FirebaseAuthException catch (e) {
+      isLoading = false;
+      errorMessage = e.message ?? "Authentication failed.";
+      update();
     } catch (e) {
       isLoading = false;
       errorMessage = "Google Sign-In failed: ${e.toString().split('Exception: ').last}";
@@ -655,8 +675,8 @@ class AuthController extends GetxController {
   @override
   void onClose() {
     stopResendTimer();
-    phoneController.dispose();
-    otpController.dispose();
+    phoneController.clear();
+    otpController.clear();
     super.onClose();
   }
 }

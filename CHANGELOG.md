@@ -1,6 +1,24 @@
 # Changelog
 
-## [2.2.0+16] - 2026-09-21 15:10:00 IST
+## [2.2.0+17] - 2026-09-21 15:35:00 IST
+
+### Removed & Replaced
+- **Stripe Removal & Native Razorpay Replacement**: Completely removed `flutter_stripe` package and all Stripe native pods (`Stripe`, `StripeApplePay`, `StripeCore`, `StripePayments`, `stripe_ios`). Migrated checkout flow to native `razorpay_flutter` with customer details pre-population and multi-gateway code fallback.
+- **Environment Update**: Replaced `STRIPE_PUBLISHABLE_KEY` with `RAZORPAY_KEY_ID` in `.env` and cleaned unused Stripe references from `main.dart` and `deposit_controller.dart`.
+
+### Fixed & Hardened
+- **Google Sign-In Crash on iOS**:
+  - Retrieved authentic OAuth 2.0 Web/Server Client ID (`91651925903-mmutsd2fu0qrt8u35b22ou6hnrbrnc9t.apps.googleusercontent.com`) from Firebase Identity Toolkit for `udharcard-app`.
+  - Added `CLIENT_ID` and `REVERSED_CLIENT_ID` to `ios/Runner/GoogleService-Info.plist` and `ios/Runner/Info.plist` (`CFBundleURLSchemes` and `GIDClientID`).
+  - Added `GoogleSignIn` callback handling in `ios/Runner/SceneDelegate.swift` via `scene(_:openURLContexts:)` to forward auth redirects directly to `GIDSignIn.sharedInstance.handle(urlContext.url)`.
+  - Configured `_googleClientId` in `AuthController` and added explicit `PlatformException` and `FirebaseAuthException` error handling.
+  - Stopped premature disposal of `phoneController` and `otpController` in `AuthController.onClose()` to eliminate "TextEditingController was used after being disposed" errors during route transitions.
+- **Splash Screen 404 / CustomError Fix**:
+  - Hardened `AppController.getBasicCtrl()` against non-JSON error payloads from `ApiResponse.handleException`, ensuring `jsonDecode` errors are caught gracefully and defaults are retained.
+  - Safeguarded `SplashScreen` null assertions on `context.t.titleLarge!` and added `mounted` validation before initiating navigation.
+- **iOS SMS Retriever Channel Guard**:
+  - Guarded `SmsRetrieverImpl` in `LoginScreen` and `SignUpScreen` with `Platform.isAndroid` so it is not initialized on iOS, eliminating `PlatformException: Unable to establish connection on channel dev.flutter.pigeon.smart_auth.SmartAuthApi`.
+
 
 ### Fixed & Configured
 - **iOS 27.0 UIScene Lifecycle Support**: Implemented `SceneDelegate.swift` inheriting `FlutterSceneDelegate`, updated `AppDelegate.swift` to adopt `FlutterImplicitEngineDelegate` and `didInitializeImplicitFlutterEngine`, and added `UIApplicationSceneManifest` configuration to `Info.plist` to eliminate immediate startup crashes on iOS 27.

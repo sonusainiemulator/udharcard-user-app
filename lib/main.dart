@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'package:paysecure/utils/services/custom_error.dart';
 import 'controllers/app_controller.dart';
@@ -31,18 +30,6 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint("Warning: Error loading .env file: $e");
-  }
-
-  try {
-    final stripeKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'];
-    if (stripeKey != null && stripeKey.trim().isNotEmpty && stripeKey != 'DEFAULT_KEY') {
-      Stripe.publishableKey = stripeKey.trim();
-      await Stripe.instance.applySettings();
-    } else {
-      debugPrint("Stripe publishable key missing or default, skipping applySettings");
-    }
-  } catch (e) {
-    debugPrint("Stripe initialization failed: $e");
   }
 
   try {

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:paysecure/utils/app_constants.dart';
@@ -27,11 +28,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   FocusNode node = FocusNode();
-  late final SmsRetrieverImpl _smsRetrieverImpl;
+  SmsRetrieverImpl? _smsRetrieverImpl;
 
   @override
   void initState() {
-    _smsRetrieverImpl = SmsRetrieverImpl(SmartAuth.instance);
+    if (Platform.isAndroid) {
+      _smsRetrieverImpl = SmsRetrieverImpl(SmartAuth.instance);
+    }
     node.addListener(() {
       setState(() {});
     });
@@ -40,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _smsRetrieverImpl.dispose();
+    _smsRetrieverImpl?.dispose();
     node.dispose();
     super.dispose();
   }
@@ -245,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Pinput(
                                 length: 6,
                                 controller: controller.otpController,
-                                smsRetriever: _smsRetrieverImpl,
+                                smsRetriever: Platform.isAndroid ? _smsRetrieverImpl : null,
                                 keyboardType: TextInputType.number,
                                 hapticFeedbackType: HapticFeedbackType.lightImpact,
                                 autofillHints: const [AutofillHints.oneTimeCode],

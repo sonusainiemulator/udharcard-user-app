@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.2.0+16
+version: 2.2.0+17
 
 environment:
   sdk: '>=3.7.2 <5.0.0' # Flutter SDK latest stable (3.47.x)
@@ -75,8 +75,7 @@ dependencies:
   photo_view: ^0.15.0
   url_launcher: ^6.3.2
   confetti: ^0.8.0
-  # Payment Gateway
-  flutter_stripe: ^13.1.0
+  # Payment Gateway (Native Razorpay)
   razorpay_flutter: ^1.4.6
   animated_text_kit: ^4.2.3
   avatar_glow:

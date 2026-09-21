@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -26,17 +27,19 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  late final SmsRetrieverImpl _smsRetrieverImpl;
+  SmsRetrieverImpl? _smsRetrieverImpl;
 
   @override
   void initState() {
-    _smsRetrieverImpl = SmsRetrieverImpl(SmartAuth.instance);
+    if (Platform.isAndroid) {
+      _smsRetrieverImpl = SmsRetrieverImpl(SmartAuth.instance);
+    }
     super.initState();
   }
 
   @override
   void dispose() {
-    _smsRetrieverImpl.dispose();
+    _smsRetrieverImpl?.dispose();
     super.dispose();
   }
 
@@ -172,7 +175,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               child: Pinput(
                                 length: 6,
                                 controller: controller.otpController,
-                                smsRetriever: _smsRetrieverImpl,
+                                smsRetriever: Platform.isAndroid ? _smsRetrieverImpl : null,
                                 keyboardType: TextInputType.number,
                                 hapticFeedbackType: HapticFeedbackType.lightImpact,
                                 autofillHints: const [AutofillHints.oneTimeCode],
