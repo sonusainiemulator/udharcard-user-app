@@ -220,12 +220,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           Material(
                             color: Colors.transparent,
                             child: AppButton(
-                              text: storedLanguage['Send OTP'] ?? "Send OTP",
+                              text: controller.isRateLimited
+                                  ? 'Try again in ${controller.rateLimitRemainingText}'
+                                  : (storedLanguage['Send OTP'] ?? "Send OTP"),
                               isLoading: controller.isLoading ? true : false,
-                              bgColor: controller.phoneController.text.isEmpty
+                              bgColor: (controller.phoneController.text.isEmpty || controller.isRateLimited)
                                   ? AppThemes.getInactiveColor()
                                   : AppColors.mainColor,
-                              onTap: controller.phoneController.text.isEmpty
+                              onTap: (controller.phoneController.text.isEmpty || controller.isRateLimited)
                                   ? null
                                   : controller.isLoading
                                   ? null

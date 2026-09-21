@@ -24,6 +24,7 @@ class AuthController extends GetxController {
   String verificationId = '';
   bool isOtpSent = false;
   int? resendToken;
+  DateTime? _rateLimitEndTime;  // tracks when too-many-requests cooldown expires
   TextEditingController phoneController = TextEditingController();
   TextEditingController otpController = TextEditingController();
 
@@ -66,6 +67,47 @@ class AuthController extends GetxController {
     update();
   }
 
+  /// Returns true if the device is currently rate-limited by Firebase
+  bool get isRateLimited {
+    if (_rateLimitEndTime == null) return false;
+    return DateTime.now().isBefore(_rateLimitEndTime!);
+  }
+
+  /// Human-friendly remaining cooldown string e.g. "4 min 32 sec"
+  String get rateLimitRemainingText {
+    if (_rateLimitEndTime == null) return '';
+    final remaining = _rateLimitEndTime!.difference(DateTime.now());
+    if (remaining.isNegative) return '';
+    final m = remaining.inMinutes;
+    final s = remaining.inSeconds % 60;
+    if (m > 0) return '$m min ${s.toString().padLeft(2, '0')} sec';
+    return '$s sec';
+  }
+
+  /// Maps a FirebaseAuthException to a short, user-friendly message
+  String _friendlyFirebaseError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'too-many-requests':
+        // Start a 5-minute rate-limit cooldown
+        _rateLimitEndTime = DateTime.now().add(const Duration(minutes: 5));
+        return 'Too many OTP requests. Please wait 5 minutes before trying again.';
+      case 'invalid-phone-number':
+        return 'Phone number is invalid. Please enter a valid 10-digit mobile number with country code.';
+      case 'network-request-failed':
+        return 'No internet connection. Please check your network and try again.';
+      case 'quota-exceeded':
+        return 'SMS quota exceeded. Please contact support or try again after some time.';
+      case 'app-not-authorized':
+        return 'App verification failed. Please update the app and try again.';
+      case 'missing-phone-number':
+        return 'Please enter your mobile number to receive an OTP.';
+      case 'captcha-check-failed':
+        return 'Security check failed. Please restart the app and try again.';
+      default:
+        return 'Could not send OTP. Please try again in a few minutes.';
+    }
+  }
+
   Future resendOtp(String fullPhoneNumber) async {
     if (!canResendOtp || isLoading) return;
     await sendOtp(fullPhoneNumber, isResend: true);
@@ -91,9 +133,37 @@ class AuthController extends GetxController {
         verificationFailed: (FirebaseAuthException e) {
           isLoading = false;
           isOtpSent = false;
-          errorMessage = e.message ?? "Verification failed";
+          final friendly = _friendlyFirebaseError(e);
+          errorMessage = friendly;
           update();
-          Helpers.showSnackBar(msg: "Verification failed: ${e.message}", title: "Error!");
+          if (e.code == 'too-many-requests') {
+            Get.dialog(
+              AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                title: const Row(
+                  children: [
+                    Icon(Icons.block_rounded, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Too Many Requests'),
+                  ],
+                ),
+                content: Text(
+                  'Firebase has temporarily blocked OTP requests from this device.\n\n'
+                  'Please wait 5 minutes and try again.\n\n'
+                  'Tip: Avoid tapping "Send OTP" multiple times rapidly.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: const Text('OK, I understand'),
+                  ),
+                ],
+              ),
+              barrierDismissible: false,
+            );
+          } else {
+            Helpers.showSnackBar(msg: friendly, title: 'OTP Failed');
+          }
         },
         codeSent: (String verId, int? forceResendingToken) {
           verificationId = verId;
@@ -117,9 +187,13 @@ class AuthController extends GetxController {
     } catch (e) {
       isLoading = false;
       isOtpSent = false;
-      errorMessage = "Error sending OTP: $e";
+      // Catch-all: show friendly message, never expose raw exception to user
+      errorMessage = 'Something went wrong. Please check your network and try again.';
       update();
-      Helpers.showSnackBar(msg: "Error sending OTP: $e", title: "Error!");
+      Helpers.showSnackBar(
+        msg: 'Could not send OTP. Please try again.',
+        title: 'Error',
+      );
     }
   }
 
