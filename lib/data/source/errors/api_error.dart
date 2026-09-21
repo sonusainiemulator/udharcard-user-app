@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../../../../utils/services/helpers.dart';
+import '../../../utils/services/localstorage/hive.dart';
+import '../../../utils/services/localstorage/keys.dart';
 import '../../../views/screens/auth/login_screen.dart';
 
 class ApiResponse {
@@ -21,7 +24,13 @@ class ApiResponse {
           return response;
 
         case 401:
-        Get.offAll(() => const LoginScreen());
+          HiveHelp.remove(Keys.token);
+          Helpers.showSnackBar(
+            msg: 'Your session has expired. Please log in again.',
+            title: 'Session Expired',
+            bgColor: Colors.redAccent,
+          );
+          Get.offAll(() => const LoginScreen());
           return _logError(
               STATUS_CODE,
               URL,

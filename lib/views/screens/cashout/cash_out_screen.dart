@@ -59,14 +59,8 @@ class CashoutScreen extends StatelessWidget {
                               storedLanguage['Agent Username/E-mail'] ??
                               'Agent Username/E-mail',
                           controller: cashoutCtrl.agentEmailController,
-                          onChanged: (v) async {
-                            if (v.isNotEmpty) {
-                              await Future.delayed(Duration(seconds: 2));
-                              await cashoutCtrl.checkAgent(agent: v.toString());
-                            } else {
-                              cashoutCtrl.checkRecipientmessage = "";
-                              cashoutCtrl.update();
-                            }
+                          onChanged: (v) {
+                            cashoutCtrl.onAgentInputChanged(v);
                           },
                         ),
                         IconButton(

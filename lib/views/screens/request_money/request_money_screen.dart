@@ -52,16 +52,8 @@ class RequestMoneyScreen extends StatelessWidget {
                           'Recipient Email or Username',
                       controller:
                           requestMoneyController.recipientEmailController,
-                      onChanged: (v) async {
-                        if (v.isNotEmpty) {
-                          await Future.delayed(Duration(seconds: 2));
-                          await SendMoneyController.to.checkRecipient(
-                            recipient: v.toString(),
-                          );
-                        } else {
-                          SendMoneyController.to.checkRecipientmessage = "";
-                          SendMoneyController.to.update();
-                        }
+                      onChanged: (v) {
+                        SendMoneyController.to.onRecipientInputChanged(v);
                       },
                     ),
                     GetBuilder<SendMoneyController>(

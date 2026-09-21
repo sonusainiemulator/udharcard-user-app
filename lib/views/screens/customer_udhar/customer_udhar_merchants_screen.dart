@@ -8,6 +8,7 @@ import '../../../utils/services/localstorage/keys.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/spacing.dart';
 import '../../widgets/merchant_status_badge.dart';
+import '../../../utils/merchant_status_helper.dart';
 import '../mobile_scanner/mobile_scanner_screen.dart';
 
 class CustomerUdharMerchantsScreen extends StatefulWidget {
@@ -19,6 +20,8 @@ class CustomerUdharMerchantsScreen extends StatefulWidget {
 
 class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScreen> {
   final CustomerUdharController _controller = Get.find<CustomerUdharController>();
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _selectedFilter = 'All';
 
   @override
   void initState() {
@@ -26,6 +29,12 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.getMerchantsList();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -220,20 +229,105 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
             );
           }
 
+          final query = _searchCtrl.text.trim().toLowerCase();
+          final filteredMerchants = controller.merchantsList.where((item) {
+            final name = (item['shop_name'] ?? '').toString().toLowerCase();
+            final phone = (item['phone'] ?? '').toString().toLowerCase();
+            final matchesQuery = query.isEmpty || name.contains(query) || phone.contains(query);
+            if (!matchesQuery) return false;
+
+            if (_selectedFilter == 'Open Now') {
+              final status = MerchantStatusHelper.getStatus(
+                item is Map<String, dynamic> ? item : Map<String, dynamic>.from(item),
+              );
+              return status.isOpen;
+            } else if (_selectedFilter == 'Has Due') {
+              final due = double.tryParse((item['outstanding_balance'] ?? '0').toString()) ?? 0.0;
+              return due > 0;
+            }
+            return true;
+          }).toList();
+
           return RefreshIndicator(
             color: AppColors.mainColor,
             onRefresh: () async {
               await controller.getMerchantsList();
             },
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              itemCount: controller.merchantsList.length,
-              itemBuilder: (context, index) {
-                final item = controller.merchantsList[index];
-                final shopName = item['shop_name'] ?? 'Merchant';
-                final outstanding = item['outstanding_balance'] ?? 0.0;
-                final creditLimit = item['credit_limit'] ?? 0.0;
-                final dueDate = item['due_date'] ?? 'N/A';
+            child: Column(
+              children: [
+                // Search Bar
+                Padding(
+                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 6.h),
+                  child: TextField(
+                    controller: _searchCtrl,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: "Search store name or phone...",
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      suffixIcon: _searchCtrl.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () {
+                                _searchCtrl.clear();
+                                setState(() {});
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Get.isDarkMode ? AppColors.darkCardColor : Colors.grey.shade100,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                // Filter Chips
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                  child: Row(
+                    children: [
+                      _buildFilterChip('All', _selectedFilter == 'All'),
+                      SizedBox(width: 8.w),
+                      _buildFilterChip('Open Now', _selectedFilter == 'Open Now'),
+                      SizedBox(width: 8.w),
+                      _buildFilterChip('Has Due', _selectedFilter == 'Has Due'),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: filteredMerchants.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.search_off_rounded, size: 48.sp, color: Colors.grey),
+                              SizedBox(height: 12.h),
+                              Text(
+                                "No stores found matching your criteria",
+                                style: t.bodyMedium?.copyWith(color: Colors.grey),
+                              ),
+                              SizedBox(height: 8.h),
+                              TextButton(
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  setState(() => _selectedFilter = 'All');
+                                },
+                                child: const Text("Reset Filters"),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          itemCount: filteredMerchants.length,
+                          itemBuilder: (context, index) {
+                            final item = filteredMerchants[index];
+                            final shopName = item['shop_name'] ?? 'Merchant';
+                            final outstanding = item['outstanding_balance'] ?? 0.0;
+                            final creditLimit = item['credit_limit'] ?? 0.0;
+                            final dueDate = item['due_date'] ?? 'N/A';
                 
                 final double progress = creditLimit > 0 ? (outstanding / creditLimit).clamp(0.0, 1.0) : 0.0;
 
@@ -430,8 +524,11 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
                 );
               },
             ),
-          );
-        },
+          ),
+        ],
+      ),
+    );
+  },
       ),
     );
   }
@@ -480,6 +577,34 @@ class _CustomerUdharMerchantsScreenState extends State<CustomerUdharMerchantsScr
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFilterChip(String label, bool isSelected) {
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12.sp,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? Colors.white : (Get.isDarkMode ? Colors.white70 : Colors.black87),
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          setState(() => _selectedFilter = label);
+        }
+      },
+      selectedColor: AppColors.mainColor,
+      backgroundColor: Get.isDarkMode ? AppColors.darkCardColor : Colors.grey.shade200,
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.r),
+        side: BorderSide(
+          color: isSelected ? AppColors.mainColor : Colors.transparent,
+        ),
+      ),
     );
   }
 }

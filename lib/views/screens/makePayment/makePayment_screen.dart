@@ -64,17 +64,8 @@ class MakePaymentScreen extends StatelessWidget {
                               'Merchant Username/E-mail',
                           controller:
                               makePaymentController.merchantEmailController,
-                          onChanged: (v) async {
-                            if (v.isNotEmpty) {
-                              await Future.delayed(Duration(seconds: 2));
-                              await makePaymentController.checkMerchant(
-                                merchant: v.toString(),
-                              );
-                            } else {
-                              makePaymentController.checkRecipientmessage = "";
-                              makePaymentController.checkedMerchantData = {};
-                              makePaymentController.update();
-                            }
+                          onChanged: (v) {
+                            makePaymentController.onMerchantInputChanged(v);
                           },
                         ),
                         IconButton(

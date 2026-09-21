@@ -25,7 +25,9 @@ class VoiceService {
     await _flutterTts.setPitch(1.0);
   }
 
-  void startListening(Function(String) onResult) async {
+  bool get isAvailable => _isSpeechInitialized;
+
+  Future<bool> startListening(Function(String) onResult) async {
     if (!_isSpeechInitialized) {
       await initialize();
     }
@@ -36,7 +38,9 @@ class VoiceService {
         },
         listenOptions: SpeechListenOptions(localeId: 'hi-IN'),
       );
+      return true;
     }
+    return false;
   }
 
   void stopListening() async {

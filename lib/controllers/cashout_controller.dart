@@ -8,11 +8,13 @@ import '../data/models/getRedeem_code_model.dart' as getRedeemCode;
 import '../data/models/makePayment_preview_model.dart' as prev;
 import '../data/repositories/cashout_repo.dart';
 import '../data/source/errors/check_api_status.dart';
+import '../utils/services/debouncer.dart';
 import '../utils/services/helpers.dart';
 
 class CashoutController extends GetxController {
   static CashoutController get to => Get.find<CashoutController>();
 
+  final Debouncer _agentDebouncer = Debouncer(milliseconds: 500);
   bool isLoading = false;
 
   TextEditingController amountController = TextEditingController();
@@ -185,10 +187,28 @@ class CashoutController extends GetxController {
     }
   }
 
+  void onAgentInputChanged(String v) {
+    if (v.trim().isNotEmpty) {
+      _agentDebouncer.run(() {
+        checkAgent(agent: v.trim());
+      });
+    } else {
+      _agentDebouncer.cancel();
+      checkRecipientmessage = "";
+      update();
+    }
+  }
+
   @override
   void onInit() {
     getCurrency();
     super.onInit();
+  }
+
+  @override
+  void onClose() {
+    _agentDebouncer.dispose();
+    super.onClose();
   }
 }
 

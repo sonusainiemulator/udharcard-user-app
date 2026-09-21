@@ -9,11 +9,10 @@ import '../../../controllers/app_controller.dart';
 import '../../../controllers/bottom_nav_controller.dart';
 import '../../../controllers/exchange_controller.dart';
 import '../../../controllers/profile_controller.dart';
-import '../../../controllers/send_money_controller.dart';
 import '../../../notification_service/notification_controller.dart';
-import '../../../routes/routes_name.dart';
 import '../../../utils/app_constants.dart';
 import '../../../utils/services/pop_app.dart';
+import '../mobile_scanner/mobile_scanner_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -294,10 +293,9 @@ class appCtrlMoneyTransferButtonState extends State<MoneyTransferButton>
   Widget build(BuildContext context) {
     return FloatingActionButton(
       onPressed: () {
-        Get.delete<SendMoneyController>();
-        Get.toNamed(RoutesName.sendMoneyScreen);
+        Get.to(() => const MobileScannerScreen(isFromMakePaymentPage: true));
       },
-      backgroundColor: AppColors.blackColor,
+      backgroundColor: AppColors.mainColor,
       child: AnimatedBuilder(
         animation: appCtrlcontroller,
         builder: (context, child) {
@@ -305,11 +303,10 @@ class appCtrlMoneyTransferButtonState extends State<MoneyTransferButton>
             offset: Offset(0, -appCtrlbounceAnimation.value), // Bounce effect
             child: Transform.scale(
               scale: appCtrlsizeAnimation.value, // Shrink and grow effect
-              child: Image.asset(
-                "$rootImageDir/money_transfer.webp",
-                fit: BoxFit.cover,
-                height: 26.h,
-                width: 26.h,
+              child: Icon(
+                Icons.qr_code_scanner_rounded,
+                color: Colors.white,
+                size: 26.sp,
               ),
             ),
           );

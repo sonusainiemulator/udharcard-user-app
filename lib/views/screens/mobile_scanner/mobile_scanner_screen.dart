@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:paysecure/controllers/cashout_controller.dart';
 import 'package:paysecure/controllers/makePayment_controller.dart';
 import 'package:paysecure/views/screens/makePayment/makePayment_screen.dart';
+import '../../../utils/qr_parser_helper.dart';
 import '../../../utils/services/helpers.dart';
 import 'package:image_picker/image_picker.dart';
 import '../cashout/cash_out_screen.dart';
@@ -40,13 +41,23 @@ class _MobileScannerScreenState extends State<MobileScannerScreen> {
   }
 
   void _processScannedCode(String code) {
+    final parsedIdentifier = QrParserHelper.extractMerchantIdentifier(code);
+    if (parsedIdentifier.isEmpty) return;
+
     if (widget.isFromCashoutPage) {
-      CashoutController.to.agentEmailController.text = code;
-      CashoutController.to.checkAgent(agent: code);
+      if (!Get.isRegistered<CashoutController>()) {
+        Get.put(CashoutController());
+      }
+      CashoutController.to.agentEmailController.text = parsedIdentifier;
+      CashoutController.to.checkAgent(agent: parsedIdentifier);
       Get.off(() => CashoutScreen(isFromScannerPage: true));
-    } else if (widget.isFromMakePaymentPage) {
-      MakePaymentController.to.merchantEmailController.text = code;
-      MakePaymentController.to.checkMerchant(merchant: code);
+    } else {
+      // Default / Make Payment flow
+      if (!Get.isRegistered<MakePaymentController>()) {
+        Get.put(MakePaymentController());
+      }
+      MakePaymentController.to.merchantEmailController.text = parsedIdentifier;
+      MakePaymentController.to.checkMerchant(merchant: parsedIdentifier);
       Get.off(() => MakePaymentScreen(isFromScannerPage: true));
     }
   }

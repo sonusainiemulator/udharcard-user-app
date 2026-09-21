@@ -18,8 +18,23 @@
   - Replaced placeholder "Upcoming" button with dedicated, functional quick-access grid: "My Udhar", "Scan & Pay", "Voice AI", "Send Money", "Deposit", "Withdraw", "History", and "Support".
 - **Udharcard Brand Modernization**:
   - Upgraded authentication registration in `AuthController` to `@udharcard.shop` domain and `UdharCard_` usernames while keeping backwards compatibility with legacy accounts.
-- **Comprehensive Unit Tests**:
-  - Added unit test suite `test/merchant_status_helper_test.dart` verifying all time parsing, weekly closed days, and edge case fallbacks (10/10 tests passing across suite).
+- **Universal QR Code Recognition & Multi-Format Parsing**:
+  - Implemented `QrParserHelper` extracting merchant identifiers from UPI links (`upi://pay?pa=...`), JSON data (`merchant`, `phone`, `email`, `merchant_id`), HTTP store URLs, and raw numbers.
+  - Resolved dead-end in `MobileScannerScreen`: scanning from Home screen or Udhar store scanner now seamlessly checks the merchant and opens payment.
+- **Keystroke API Spam Elimination (Debouncer Architecture)**:
+  - Created `Debouncer` service canceling pending calls during rapid user input.
+  - Implemented debouncing across `MakePaymentController`, `SendMoneyController`, and `CashoutController`, eliminating race conditions and UI flickering.
+- **Session Token Expiry Auto-Recovery**:
+  - Hardened `ApiResponse.processResponse`: HTTP `401 Unauthorized` now reliably purges `Keys.token` from storage, displays an informative session expired notice, and navigates cleanly to the login screen.
+- **Center Floating Action Button Market Alignment**:
+  - Connected the glowing center bottom navigation FAB directly to instant **Scan & Pay** (`MobileScannerScreen`) matching standard fintech UX.
+- **Merchant Search & Real-Time Filter**:
+  - Added live search bar and filter chips ("All", "Open Now", "Has Due") in `CustomerUdharMerchantsScreen`.
+- **Voice AI Assistant Offline Resilience**:
+  - Replaced un-cached external network Lottie URL with a native animated sound wave widget in `VoiceModeScreen`.
+  - Added graceful microphone permission validation and user notification.
+- **Comprehensive Test Suite Extension**:
+  - Added `test/qr_parser_test.dart` verifying all QR payload formats (15/15 tests passing across entire suite).
 
 ### Fixed
 - **Login OTP Screen Bug**: Cleared stale `errorMessage` in `sendOtp()` — "The phone field is required" error no longer bleeds onto the OTP entry screen after phone verification starts.

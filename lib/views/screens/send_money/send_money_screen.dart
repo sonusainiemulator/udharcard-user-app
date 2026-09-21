@@ -52,16 +52,8 @@ class SendMoneyScreen extends StatelessWidget {
                           storedLanguage['Recipient Email or Username'] ??
                           'Recipient Email or Username',
                       controller: sendMoneyController.recipientEmailController,
-                      onChanged: (v) async {
-                        if (v.isNotEmpty) {
-                          await Future.delayed(Duration(seconds: 2));
-                          await sendMoneyController.checkRecipient(
-                            recipient: v.toString(),
-                          );
-                        } else {
-                          sendMoneyController.checkRecipientmessage = "";
-                          sendMoneyController.update();
-                        }
+                      onChanged: (v) {
+                        sendMoneyController.onRecipientInputChanged(v);
                       },
                     ),
                     if (sendMoneyController.checkRecipientmessage.isNotEmpty)

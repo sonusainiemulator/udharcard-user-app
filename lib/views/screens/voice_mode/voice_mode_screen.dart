@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
 import 'package:paysecure/config/app_colors.dart';
 import 'package:paysecure/config/dimensions.dart';
 import 'package:paysecure/services/ai_service.dart';
@@ -31,7 +30,7 @@ class _VoiceModeScreenState extends State<VoiceModeScreen> {
     _voiceService.initialize();
   }
 
-  void _toggleListening() {
+  void _toggleListening() async {
     if (_isListening) {
       _voiceService.stopListening();
       setState(() {
@@ -41,12 +40,21 @@ class _VoiceModeScreenState extends State<VoiceModeScreen> {
       _processVoiceInput();
     } else {
       _aiResponse = "";
-      setState(() => _isListening = true);
-      _voiceService.startListening((text) {
+      final started = await _voiceService.startListening((text) {
         setState(() {
           _spokenText = text;
         });
       });
+      if (started) {
+        setState(() => _isListening = true);
+      } else {
+        Get.snackbar(
+          "Microphone Permission",
+          "Please enable microphone permission in device Settings to use Voice Mode.",
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      }
     }
   }
 
@@ -143,13 +151,7 @@ class _VoiceModeScreenState extends State<VoiceModeScreen> {
             ),
             VSpace(30.h),
             if (_isListening)
-              SizedBox(
-                height: 100.h,
-                child: Lottie.network(
-                  'https://assets2.lottiefiles.com/packages/lf20_t1q2zksy.json', // Sound wave animation placeholder
-                  fit: BoxFit.contain,
-                ),
-              ),
+              _buildNativeSoundWave(),
             VSpace(20.h),
             GestureDetector(
               onTap: _toggleListening,
@@ -178,6 +180,41 @@ class _VoiceModeScreenState extends State<VoiceModeScreen> {
             VSpace(40.h),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNativeSoundWave() {
+    return Container(
+      height: 60.h,
+      padding: EdgeInsets.symmetric(horizontal: 40.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: List.generate(7, (index) {
+          final heights = [20.h, 35.h, 50.h, 40.h, 55.h, 30.h, 22.h];
+          return TweenAnimationBuilder<double>(
+            tween: Tween(begin: 10.0, end: heights[index % heights.length]),
+            duration: Duration(milliseconds: 300 + (index * 70)),
+            curve: Curves.easeInOut,
+            builder: (context, val, child) {
+              return Container(
+                width: 6.w,
+                height: val,
+                decoration: BoxDecoration(
+                  color: AppColors.mainColor,
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.mainColor.withValues(alpha: 0.4),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }),
       ),
     );
   }

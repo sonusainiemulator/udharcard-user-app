@@ -8,12 +8,14 @@ import '../data/models/amount_check_model.dart';
 import '../data/models/getRedeem_code_model.dart' as getRedeemCode;
 import '../data/models/makePayment_preview_model.dart' as prev;
 import '../data/source/errors/check_api_status.dart';
+import '../utils/services/debouncer.dart';
 import '../utils/services/helpers.dart';
 import '../views/screens/makePayment/makePayment_preview_screen.dart';
 
 class MakePaymentController extends GetxController {
   static MakePaymentController get to => Get.find<MakePaymentController>();
 
+  final Debouncer _merchantDebouncer = Debouncer(milliseconds: 500);
   bool isLoading = false;
   
 
@@ -219,9 +221,28 @@ class MakePaymentController extends GetxController {
 
 
 
+  void onMerchantInputChanged(String v) {
+    if (v.trim().isNotEmpty) {
+      _merchantDebouncer.run(() {
+        checkMerchant(merchant: v.trim());
+      });
+    } else {
+      _merchantDebouncer.cancel();
+      checkRecipientmessage = "";
+      checkedMerchantData = {};
+      update();
+    }
+  }
+
+  @override
+  void onClose() {
+    _merchantDebouncer.dispose();
+    controller.dispose();
+    super.onClose();
+  }
+
   //-------------SCAN CONTROLLER
-  final MobileScannerController controller = MobileScannerController(
-);
+  final MobileScannerController controller = MobileScannerController();
 }
 
 class CustomCurrencyModel {

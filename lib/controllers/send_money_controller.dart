@@ -9,6 +9,7 @@ import '../data/models/getRedeem_code_model.dart' as getRedeemCode;
 import '../data/models/send_money_preview_model.dart' as prev;
 import '../data/repositories/redeem_code_repo.dart';
 import '../data/source/errors/check_api_status.dart';
+import '../utils/services/debouncer.dart';
 import '../utils/services/helpers.dart';
 import '../views/screens/send_money/send_money_history_screen.dart';
 import '../views/screens/send_money/send_money_preview_screen.dart';
@@ -16,6 +17,7 @@ import '../views/screens/send_money/send_money_preview_screen.dart';
 class SendMoneyController extends GetxController {
   static SendMoneyController get to => Get.find<SendMoneyController>();
 
+  final Debouncer _recipientDebouncer = Debouncer(milliseconds: 500);
   bool isLoading = false;
 
   TextEditingController amountController = TextEditingController();
@@ -217,10 +219,28 @@ class SendMoneyController extends GetxController {
     }
   }
 
+  void onRecipientInputChanged(String v) {
+    if (v.trim().isNotEmpty) {
+      _recipientDebouncer.run(() {
+        checkRecipient(recipient: v.trim());
+      });
+    } else {
+      _recipientDebouncer.cancel();
+      checkRecipientmessage = "";
+      update();
+    }
+  }
+
   @override
   void onInit() {
     getsendMoney();
     super.onInit();
+  }
+
+  @override
+  void onClose() {
+    _recipientDebouncer.dispose();
+    super.onClose();
   }
 }
 
