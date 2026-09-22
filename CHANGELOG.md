@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0+20] - 2026-09-22 12:05:00 IST
+
+### Fixed & Enhanced — TestFlight Ready
+- **Onboarding Voice Removal**: Removed Voice Mode feature slide from user app onboarding (`onbording_data.dart`) per product direction; replaced with "Scan & Pay Any Store"; cleaned up placeholder Lorem Ipsum text and removed obsolete remote Lottie dependency.
+- **Firebase OTP Cooldown & Rate Limiting UX**: Handled `too-many-requests` and `quota-exceeded` Firebase Phone Auth errors gracefully with a clear 5-minute cooldown alert dialog and dynamic button timer to avoid blocking accounts.
+- **iOS Archive & Distribution**: Prepared clean release archive for App Store Connect / TestFlight distribution.
+
 ## [2.3.0+19] - 2026-09-22 00:37:00 IST
 
 ### Added — Digital Udhar Passbook (Market-Ready Release)
