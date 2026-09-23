@@ -1,5 +1,59 @@
 # Changelog
 
+## [2.4.0+21] - 2026-09-23 11:15:00 IST
+
+### Added & Redesigned — 1:1 UI Redesign Matching Design Reference
+- **Complete Visual Redesign**: Overhauled all user app screens to exactly match the reference design mockup with modern fintech aesthetics, royal blue color palette (`Color(0xff0B57CF)`), smooth bezier wave backgrounds, high-resolution icons, and custom generated 3D illustration badges.
+- **Screen 1 (Login Screen Improved)**:
+  - Clean centered UdharCard logo with tagline.
+  - "Welcome Back! Log in to continue to UdharCard" header.
+  - Flag-adorned India (+91) phone input field with rounded border.
+  - "Remember me" checkbox and inline red warning message banner.
+  - "Send OTP →" action button with forward arrow.
+  - "Continue with Google" social login button.
+  - "Trusted by 10,000+ Users" shield verification footer with layered bezier wave art.
+- **Screen 2 (OTP Verification)**:
+  - 3D light-blue letter envelope illustration with OTP badge and green security checkmark.
+  - Centered "Verify OTP" header with masked phone display.
+  - 6 individual digit verification boxes with automatic cursor focus.
+  - Real-time countdown timer ("Resend in 00:28") and "Change Mobile Number" link.
+  - "Verify OTP →" action button with blue gradient.
+- **Screen 3 (Let's Get Started / Account Type Selection)**:
+  - New dedicated `GetStartedScreen` enabling selection between "I am a Customer" and "I am a Merchant".
+  - Interactive radio-card selectors with distinct custom icons and description subtitles.
+  - "Continue" full-width button.
+  - Custom storefront cityscape footer banner ("Local Businesses | Trusted Payments | Digital Udhar").
+- **Screen 4 (User Dashboard)**:
+  - Personalized top header with user avatar, greeting ("Hello, [Name]"), and notification bell with indicator.
+  - Royal blue gradient Available Limit hero card ("₹25,000") with quick "View Details →" link.
+  - 4 high-frequency quick action buttons in soft rounded container cards: [Scan & Pay], [My Udhari], [Payments], [Offers].
+  - Nearby Merchants horizontal category chips (Grocery, Medical, Electronics, Fashion, Restaurant) with "View All" link.
+  - "Shop Now Pay Later — Support Local Business" promotional banner featuring 3D glossy yellow shopping bags.
+  - Recent Transactions activity card with merchant category icons, due/paid status badges, and date timestamps.
+- **Bottom Navigation Bar**:
+  - Re-architected 5-destination bottom navigation bar with active blue indicator dots: Home, Merchants, Center Floating Action Button (Instant Scan & Pay), Udhari, and Profile.
+- **Screen 6 (Sign Up)**:
+  - Full Name, India (+91) Mobile Number, Email Address, and Password with visibility toggle.
+  - Customer / Merchant account type selector radio options.
+  - Terms & Conditions and Privacy Policy agreement checkbox.
+  - Full-width "Sign Up" button and "Already have an account? Log In" navigation.
+- **Screen 7 (Forgot Password)**:
+  - Rounded circular blue lock shield badge.
+  - "Forgot Password? Enter your mobile number to reset your password" instruction.
+  - India (+91) mobile number input field with "Send Reset Link" button.
+- **Screen 8 (My Profile)**:
+  - Centered circular avatar with camera edit badge.
+  - Comprehensive user details card displaying Name, Mobile, Email, Account Type, Credit Limit, and Member Since.
+  - Clean rounded menu tiles: Edit Profile, Change Password, Help & Support, About UdharCard, and Logout with red icon.
+- **Screen 9 (Transactions History)**:
+  - Filter tabs: `[ All ] [ Paid ] [ Pending ]`.
+  - Rich transaction list tiles with category-specific colored icon boxes (Grocery green, Medical blue, Fashion red, Electronics blue, Cafe orange).
+  - Clean amount display with color-coded "Paid" (green) and "Due" (orange) status badges.
+- **Screen 10 (Nearby Merchants)**:
+  - Search bar with placeholder and filter icon button.
+  - Scrollable category filter pills (All, Grocery, Medical, Electronics, Restaurant).
+  - Merchant list cards displaying shop name, category, star rating, distance (e.g. `4.8 | 0.5 km`), and "View" button.
+
 ## [2.3.0+20] - 2026-09-22 12:05:00 IST
 
 ### Fixed & Enhanced — TestFlight Ready

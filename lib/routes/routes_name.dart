@@ -1,6 +1,7 @@
 class RoutesName {
   static String INITIAL = "/";
   static String onbordingScreen = "/onbordingScreen";
+  static String getStartedScreen = "/getStartedScreen";
   static String bottomNavBar = "/bottomNavBar";
   static String loginScreen = "/loginScreen";
   static String signUpScreen = "/signUpScreen";

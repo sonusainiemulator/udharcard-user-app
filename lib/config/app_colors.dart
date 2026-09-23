@@ -1,26 +1,38 @@
 import 'dart:ui';
 
 class AppColors {
-  // Udhar Card Brand Colors
-  static Color mainColor = Color(0xff1B3A6B); // Navy Blue (primary brand color)
+  // Udhar Card Brand Colors (Matching Modern UI Design)
+  static Color mainColor = const Color(0xff0B57CF); // Vibrant Royal Blue
+  static Color primaryBlue = const Color(0xff0B57CF);
+  static Color navyBlue = const Color(0xff1B3A6B); // Deep Navy
 
-  static Color secondaryColor = Color(0xffF5A623); // Gold (accent brand color)
+  static Color secondaryColor = const Color(0xffF5A623); // Gold (accent brand color)
+  static Color yellowColor = const Color(0xffF5A623); // Gold accent
+  static Color pendingColor = const Color(0xffF7931A);
 
-  static Color yellowColor = Color(0xffF5A623); // Gold accent
-  static Color pendingColor = Color(0xffF7931A);
+  static Color heroGradientStart = const Color(0xff0A4BB5);
+  static Color heroGradientEnd = const Color(0xff1D6FE9);
 
-  static Color splashGradient1 = Color(0xff1B3A6B); // Deep Navy
-  static Color splashGradient2 = Color(0xff2E5FA3); // Lighter Navy
+  static Color splashGradient1 = const Color(0xff0B57CF);
+  static Color splashGradient2 = const Color(0xff1E4E8C);
 
-  static const Color textFieldHintColor = Color(0xffB4B7BA);
-  static const Color fillColorColor = Color(0xffF7F7F5);
-  static const Color greyColor = Color(0xff818688);
-  static const Color borderColor = Color(0xffE7E8E9);
-  static const Color sliderInActiveColor = Color(0xffEAEAEA);
+  static const Color lightBlueTint = Color(0xffEFF6FF);
+  static const Color lightBlueBackground = Color(0xffF0F6FE);
+  static const Color cardBorderColor = Color(0xffE2E8F0);
+  static const Color textDarkColor = Color(0xff0F172A);
+  static const Color textMutedColor = Color(0xff64748B);
+  static const Color waveLight1 = Color(0xffEBF3FF);
+  static const Color waveLight2 = Color(0xffDDEAFE);
 
-  static Color imageBgColor = mainColor.withValues(alpha: .2);
-  static const Color bgColor = Color(0xffEAF6FF);
-  static const Color scaffoldColor = Color(0xffF9FAFC);
+  static const Color textFieldHintColor = Color(0xff94A3B8);
+  static const Color fillColorColor = Color(0xffF8FAFC);
+  static const Color greyColor = Color(0xff64748B);
+  static const Color borderColor = Color(0xffE2E8F0);
+  static const Color sliderInActiveColor = Color(0xffE2E8F0);
+
+  static Color imageBgColor = mainColor.withValues(alpha: .15);
+  static const Color bgColor = Color(0xffF0F6FE);
+  static const Color scaffoldColor = Color(0xffF8FAFC);
   static const Color paragraphColor = Color(0xff666666);
   static const Color darkBgColor = Color(0xff0E1621);
   static const Color darkCardColor = Color(0xff17212B);

@@ -171,7 +171,7 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
                             : storedLanguage['Next'] ?? "Next",
                     onTap: () {
                       (currentIndex == (onBordingDataList.length - 1))
-                          ? Get.offAllNamed(RoutesName.loginScreen)
+                          ? Get.offAllNamed(RoutesName.getStartedScreen)
                           : controller.nextPage(
                             duration: const Duration(milliseconds: 800),
                             curve: Curves.easeInOutQuint,

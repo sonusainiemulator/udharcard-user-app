@@ -1,3 +1,4 @@
+import '../views/screens/auth/get_started_screen.dart';
 import '../views/screens/cashout/cash_out_preview_screen.dart';
 import '../views/screens/cashout/cash_out_screen.dart';
 import '../views/screens/makePayment/makePayment_preview_screen.dart';
@@ -21,6 +22,9 @@ class RouteHelper {
         GetPage(name: RoutesName.INITIAL, page: () => SplashScreen()),
         GetPage(
             name: RoutesName.onbordingScreen, page: () => OnbordingScreen()),
+        GetPage(
+            name: RoutesName.getStartedScreen,
+            page: () => const GetStartedScreen()),
         GetPage(name: RoutesName.bottomNavBar, page: () => BottomNavBar()),
         GetPage(name: RoutesName.loginScreen, page: () => LoginScreen()),
         GetPage(name: RoutesName.signUpScreen, page: () => SignUpScreen()),

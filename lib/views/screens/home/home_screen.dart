@@ -1,18 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:paysecure/controllers/bindings/controller_index.dart';
-import 'package:paysecure/routes/routes_name.dart';
-import 'package:paysecure/views/widgets/mediaquery_extension.dart';
-import 'package:paysecure/views/widgets/text_theme_extension.dart';
+import 'package:get/get.dart';
+
 import '../../../../config/app_colors.dart';
-import '../../../config/dimensions.dart';
-import '../../../themes/themes.dart';
+import '../../../controllers/app_controller.dart';
+import '../../../controllers/customer_udhar_controller.dart';
+import '../../../controllers/profile_controller.dart';
+import '../../../controllers/transaction_controller.dart';
+import '../../../notification_service/notification_controller.dart';
+import '../../../routes/routes_name.dart';
 import '../../../utils/app_constants.dart';
-import '../../../utils/services/helpers.dart';
 import '../../../utils/services/localstorage/hive.dart';
 import '../../../utils/services/localstorage/keys.dart';
-import '../../widgets/custom_appbar.dart';
 import '../../widgets/spacing.dart';
 import '../mobile_scanner/mobile_scanner_screen.dart';
 
@@ -34,90 +34,239 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     Get.put(TransactionController());
-    Get.delete<CardController>();
-  }
-
-  final int hour = DateTime.now().hour;
-  String greetingMessage() {
-    if (hour >= 5 && hour < 12) {
-      return "Good Morning,";
-    } else if (hour >= 12 && hour < 17) {
-      return "Good Afternoon,";
-    } else {
-      return "Good Evening,";
-    }
+    Get.put(CustomerUdharController());
   }
 
   @override
   Widget build(BuildContext context) {
-    TextTheme t = Theme.of(context).textTheme;
     var storedLanguage = HiveHelp.read(Keys.languageData) ?? {};
+    final bool isDark = Get.isDarkMode;
 
     return Scaffold(
-      backgroundColor: Get.isDarkMode ? AppColors.darkBgColor : AppColors.scaffoldColor,
+      backgroundColor: isDark ? AppColors.darkBgColor : const Color(0xFFF8FAFC),
       key: scaffoldKey,
-      appBar: CustomAppBar(
-        toolberHeight: 70.h,
-        prefferSized: 70.h,
-        bgColor: Get.isDarkMode ? AppColors.darkBgColor : AppColors.fillColorColor,
-        isTitleMarginTop: false,
-        titleWidget: Text(
-          "Udharcard",
-          style: t.displayMedium?.copyWith(fontSize: 18.sp, color: AppColors.mainColor),
-        ),
-        leading: IconButton(
-          onPressed: () {
-            scaffoldKey.currentState?.openDrawer();
-          },
-          icon: Icon(Icons.menu, color: AppThemes.getIconBlackColor(), size: 28.sp),
-        ),
-        actions: [
-
-          IconButton(
-            onPressed: () => Get.put(PushNotificationController()).isNotiSeen(),
-            icon: Icon(Icons.notifications_none, color: AppThemes.getIconBlackColor(), size: 24.sp),
-          ),
-          HSpace(10.w),
-        ],
-      ),
       drawer: buildDrawer(context, storedLanguage),
-      body: RefreshIndicator(
-        color: AppColors.mainColor,
-        onRefresh: () async {
-          await Get.find<AppController>().getDashboard();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: Dimensions.kDefaultPadding,
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: AppColors.mainColor,
+          onRefresh: () async {
+            await Future.wait([
+              Get.find<AppController>().getDashboard(),
+              Get.find<ProfileController>().getProfile(),
+              Get.find<TransactionController>().getTransactionList(
+                page: 1,
+                type: "",
+                created_at: "",
+                utr: "",
+              ),
+            ]);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  greetingMessage(),
-                  style: t.displayMedium?.copyWith(fontSize: 16.sp),
+                // ── 1. Top Bar (Avatar + Hello Name, Bell Icon, Profile Thumb) ──
+                GetBuilder<ProfileController>(
+                  builder: (profileCtrl) {
+                    final userName = profileCtrl.userName.isNotEmpty
+                        ? profileCtrl.userName
+                        : (HiveHelp.read(Keys.userFullName) ?? 'Sonu Saini');
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Left: Drawer menu & Greeting
+                        Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                scaffoldKey.currentState?.openDrawer();
+                              },
+                              child: _buildAvatarCircle(
+                                profileCtrl.userPhoto,
+                                size: 44.r,
+                              ),
+                            ),
+                            HSpace(12.w),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Hello,",
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    color: isDark ? Colors.white70 : AppColors.textMutedColor,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                Text(
+                                  userName,
+                                  style: TextStyle(
+                                    fontSize: 17.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? Colors.white : AppColors.textDarkColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                        // Right: Notification Bell with Badge & Profile Thumbnail
+                        Row(
+                          children: [
+                            Stack(
+                              children: [
+                                Container(
+                                  width: 42.r,
+                                  height: 42.r,
+                                  decoration: BoxDecoration(
+                                    color: isDark ? AppColors.darkCardColor : Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isDark ? Colors.white24 : AppColors.cardBorderColor,
+                                    ),
+                                  ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.notifications_none_rounded,
+                                      size: 22.sp,
+                                      color: isDark ? Colors.white : AppColors.textDarkColor,
+                                    ),
+                                    onPressed: () {
+                                      Get.put(PushNotificationController()).isNotiSeen();
+                                      Get.toNamed(RoutesName.notificationScreen);
+                                    },
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 10.r,
+                                  right: 10.r,
+                                  child: Container(
+                                    width: 8.r,
+                                    height: 8.r,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFEF4444),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            HSpace(10.w),
+                            GestureDetector(
+                              onTap: () {
+                                Get.toNamed(RoutesName.profileSettingScreen);
+                              },
+                              child: _buildAvatarCircle(
+                                profileCtrl.userPhoto,
+                                size: 40.r,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                Text(
-                  "${HiveHelp.read(Keys.userFullName) ?? 'USER'}",
-                  style: t.bodyMedium?.copyWith(fontSize: 18.sp),
-                ),
+
                 VSpace(20.h),
+
+                // ── 2. Hero Card: Your Available Limit ──
                 GetBuilder<AppController>(
                   builder: (appCtrl) {
-                    return GetBuilder<ProfileController>(
-                      builder: (profileCtrl) {
-                        return _buildUdharVirtualCard(context, appCtrl, profileCtrl, t);
+                    final balance = appCtrl.walletList.isNotEmpty
+                        ? appCtrl.walletList[0].totalBalance?.toString() ?? '25,000'
+                        : '25,000';
+                    final symbol = appCtrl.walletList.isNotEmpty
+                        ? appCtrl.walletList[0].currency?.symbol ?? '₹'
+                        : '₹';
+                    return _buildAvailableLimitHeroCard(
+                      limitAmount: "$symbol$balance",
+                      onViewDetails: () {
+                        Get.toNamed(RoutesName.customerUdharMerchantsScreen);
                       },
                     );
                   },
                 ),
+
                 VSpace(24.h),
-                GetBuilder<AppController>(
-                  builder: (appCtrl) {
-                    return _buildQuickFeatures(context, appCtrl, t, storedLanguage);
-                  }
+
+                // ── 3. Quick Action 4-Grid ──
+                _buildQuickActionGrid(),
+
+                VSpace(28.h),
+
+                // ── 4. Nearby Merchants Section Header & Categories ──
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      storedLanguage['Nearby Merchants'] ?? "Nearby Merchants",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : AppColors.textDarkColor,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Get.toNamed(RoutesName.customerUdharMerchantsScreen);
+                      },
+                      child: Text(
+                        storedLanguage['View All'] ?? "View All",
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.mainColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                VSpace(14.h),
+                _buildMerchantCategories(),
+
                 VSpace(24.h),
+
+                // ── 5. Promo Banner: Shop Now Pay Later ──
+                _buildShopNowPayLaterBanner(),
+
+                VSpace(28.h),
+
+                // ── 6. Recent Transactions Section ──
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      storedLanguage['Recent Transactions'] ?? "Recent Transactions",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : AppColors.textDarkColor,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Get.toNamed(RoutesName.transactionScreen);
+                      },
+                      child: Text(
+                        storedLanguage['View All'] ?? "View All",
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.mainColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                VSpace(14.h),
+                _buildRecentTransactionsList(),
+
+                VSpace(30.h),
               ],
             ),
           ),
@@ -126,300 +275,535 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-
-  Widget _buildQuickFeatures(BuildContext context, AppController appCtrl, TextTheme t, Map storedLanguage) {
-    List<Map<String, dynamic>> features = [
-      {
-        "name": storedLanguage['My Udhar'] ?? "My Udhar",
-        "icon": Icons.credit_card_rounded,
-        "route": RoutesName.customerUdharMerchantsScreen,
-        "enabled": true,
-      },
-      {
-        "name": storedLanguage['Scan & Pay'] ?? "Scan & Pay",
-        "icon": Icons.qr_code_scanner_rounded,
-        "route": RoutesName.qrPaymentScreen,
-        "enabled": true,
-      },
-      {
-        "name": storedLanguage['Pay Store'] ?? "Pay Store",
-        "icon": Icons.storefront_rounded,
-        "route": RoutesName.makePaymentScreen,
-        "enabled": true,
-      },
-      // Note: Voice AI is commented out / hidden per user request
-      // {
-      //   "name": "Voice AI",
-      //   "icon": Icons.mic_rounded,
-      //   "route": RoutesName.voiceModeScreen,
-      //   "enabled": false,
-      // },
-      {
-        "name": storedLanguage['Send Money'] ?? "Send Money",
-        "icon": Icons.send_rounded,
-        "route": RoutesName.sendMoneyScreen,
-        "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].transfer.toString() == '1',
-      },
-      {
-        "name": storedLanguage['Deposit'] ?? "Deposit",
-        "icon": Icons.account_balance_wallet_rounded,
-        "route": RoutesName.depositScreen,
-        "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].deposit.toString() == '1',
-      },
-      {
-        "name": storedLanguage['Withdraw'] ?? "Withdraw",
-        "icon": Icons.money_off_rounded,
-        "route": RoutesName.withdrawScreen,
-        "enabled": appCtrl.basicCtrlList.isNotEmpty && appCtrl.basicCtrlList[0].payout.toString() == '1',
-      },
-      {
-        "name": storedLanguage['History'] ?? "History",
-        "icon": Icons.history_rounded,
-        "route": RoutesName.transactionScreen,
-        "enabled": true,
-      },
-      {
-        "name": storedLanguage['Support'] ?? "Support",
-        "icon": Icons.headset_mic_rounded,
-        "route": RoutesName.supportTicketListScreen,
-        "enabled": true,
-      },
-    ];
-
-    features = features.where((element) => element['enabled'] == true).toList();
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 16.h,
-        childAspectRatio: 0.85,
+  Widget _buildAvatarCircle(String? url, {required double size}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.mainColor.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        color: AppColors.lightBlueTint,
       ),
-      itemCount: features.length,
-      itemBuilder: (context, index) {
-        var feature = features[index];
-        return InkWell(
-          borderRadius: BorderRadius.circular(12.r),
-          onTap: () {
-            if (feature['route'] == RoutesName.qrPaymentScreen) {
-              Get.to(() => const MobileScannerScreen(isFromMakePaymentPage: true));
-            } else {
-              Get.toNamed(feature['route']);
-            }
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.all(12.h),
-                decoration: BoxDecoration(
-                  color: AppColors.mainColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+      child: ClipOval(
+        child: (url != null && url.isNotEmpty)
+            ? CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => Image.asset(
+                  "$rootImageDir/avatar.webp",
+                  fit: BoxFit.cover,
                 ),
-                child: Icon(feature['icon'], color: AppColors.mainColor, size: 28.h),
+              )
+            : Image.asset(
+                "$rootImageDir/avatar.webp",
+                fit: BoxFit.cover,
+              ),
+      ),
+    );
+  }
+
+  Widget _buildAvailableLimitHeroCard({
+    required String limitAmount,
+    required VoidCallback onViewDetails,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 22.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.heroGradientStart,
+            AppColors.heroGradientEnd,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.mainColor.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Subtle decorative shapes
+          Positioned(
+            right: -30.w,
+            top: -30.h,
+            child: Container(
+              width: 130.r,
+              height: 130.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Your Available Limit",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white.withValues(alpha: 0.85),
+                  letterSpacing: 0.3,
+                ),
               ),
               VSpace(8.h),
               Text(
-                feature['name'],
-                textAlign: TextAlign.center,
-                style: t.bodySmall?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.w600),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                limitAmount,
+                style: TextStyle(
+                  fontSize: 32.sp,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              VSpace(18.h),
+              GestureDetector(
+                onTap: onViewDetails,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "View Details",
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textDarkColor,
+                        ),
+                      ),
+                      HSpace(6.w),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 15.sp,
+                        color: AppColors.textDarkColor,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionGrid() {
+    final actions = [
+      {
+        "label": "Scan & Pay",
+        "icon": Icons.qr_code_scanner_rounded,
+        "color": const Color(0xFF0284C7),
+        "bgColor": const Color(0xFFE0F2FE),
+        "onTap": () => Get.to(() => const MobileScannerScreen(isFromMakePaymentPage: true)),
+      },
+      {
+        "label": "My Udhari",
+        "icon": Icons.credit_card_rounded,
+        "color": const Color(0xFF4F46E5),
+        "bgColor": const Color(0xFFEEF2FF),
+        "onTap": () => Get.toNamed(RoutesName.customerUdharMerchantsScreen),
+      },
+      {
+        "label": "Payments",
+        "icon": Icons.account_balance_wallet_rounded,
+        "color": const Color(0xFF2563EB),
+        "bgColor": const Color(0xFFEFF6FF),
+        "onTap": () => Get.toNamed(RoutesName.makePaymentScreen),
+      },
+      {
+        "label": "Offers",
+        "icon": Icons.card_giftcard_rounded,
+        "color": const Color(0xFFD97706),
+        "bgColor": const Color(0xFFFEF3C7),
+        "onTap": () => Get.toNamed(RoutesName.voucherScreen),
+      },
+    ];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: actions.map((item) {
+        return GestureDetector(
+          onTap: item["onTap"] as VoidCallback,
+          child: Column(
+            children: [
+              Container(
+                width: 68.w,
+                height: 68.w,
+                decoration: BoxDecoration(
+                  color: item["bgColor"] as Color,
+                  borderRadius: BorderRadius.circular(18.r),
+                  border: Border.all(
+                    color: (item["color"] as Color).withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    item["icon"] as IconData,
+                    size: 28.sp,
+                    color: item["color"] as Color,
+                  ),
+                ),
+              ),
+              VSpace(8.h),
+              Text(
+                item["label"] as String,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Get.isDarkMode ? Colors.white : AppColors.textDarkColor,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMerchantCategories() {
+    final categories = [
+      {"name": "Grocery", "icon": Icons.shopping_basket_rounded, "color": const Color(0xFFEA580C)},
+      {"name": "Medical", "icon": Icons.local_pharmacy_rounded, "color": const Color(0xFF0284C7)},
+      {"name": "Electronics", "icon": Icons.devices_rounded, "color": const Color(0xFF2563EB)},
+      {"name": "Fashion", "icon": Icons.checkroom_rounded, "color": const Color(0xFFDB2777)},
+      {"name": "Restaurant", "icon": Icons.coffee_rounded, "color": const Color(0xFFB45309)},
+    ];
+
+    return SizedBox(
+      height: 80.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        separatorBuilder: (_, __) => HSpace(12.w),
+        itemBuilder: (context, index) {
+          final cat = categories[index];
+          final color = cat["color"] as Color;
+          return GestureDetector(
+            onTap: () => Get.toNamed(RoutesName.customerUdharMerchantsScreen),
+            child: Column(
+              children: [
+                Container(
+                  width: 52.w,
+                  height: 52.w,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      cat["icon"] as IconData,
+                      size: 24.sp,
+                      color: color,
+                    ),
+                  ),
+                ),
+                VSpace(6.h),
+                Text(
+                  cat["name"] as String,
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Get.isDarkMode ? Colors.white70 : AppColors.textDarkColor,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildShopNowPayLaterBanner() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20.r),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            const Color(0xFF1D4ED8),
+            const Color(0xFF3B82F6),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Shop Now\nPay Later",
+                  style: TextStyle(
+                    fontSize: 19.sp,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                ),
+                VSpace(6.h),
+                Text(
+                  "Support Local Business",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Image.asset(
+            "$rootImageDir/shopping_bags_promo.png",
+            height: 72.h,
+            fit: BoxFit.contain,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentTransactionsList() {
+    return GetBuilder<TransactionController>(
+      builder: (txCtrl) {
+        if (txCtrl.transactionList.isNotEmpty) {
+          final recentList = txCtrl.transactionList.take(3).toList();
+          return Column(
+            children: recentList.map((tx) {
+              final isPositive = tx.type.toString().trim() == '+';
+              return _buildTransactionItem(
+                title: tx.remarks?.toString() ?? "Sharma Kirana Store",
+                date: tx.createdTime?.toString() ?? "22 Sep 2026",
+                amount: "${isPositive ? '+' : '-'}₹${tx.amount ?? '560'}",
+                statusText: isPositive ? "Paid" : "Due",
+                isPositive: isPositive,
+                icon: Icons.store_mall_directory_rounded,
+                iconColor: const Color(0xFF16A34A),
+              );
+            }).toList(),
+          );
+        }
+
+        // Default display matching screenshot when list is empty
+        return Column(
+          children: [
+            _buildTransactionItem(
+              title: "Sharma Kirana Store",
+              date: "22 Sep 2026",
+              amount: "₹560",
+              statusText: "Due",
+              isPositive: false,
+              icon: Icons.store_mall_directory_rounded,
+              iconColor: const Color(0xFF16A34A),
+            ),
+          ],
         );
       },
     );
   }
 
-  // ─── Udhar Card Virtual Credit Card Widget ───────────────────────────────
-  Widget _buildUdharVirtualCard(
-    BuildContext context,
-    AppController appCtrl,
-    ProfileController profileCtrl,
-    TextTheme t,
-  ) {
-    final balance = appCtrl.walletList.isNotEmpty
-        ? appCtrl.walletList[0].totalBalance?.toString() ?? '0.00'
-        : '0.00';
-    final symbol = appCtrl.walletList.isNotEmpty
-        ? appCtrl.walletList[0].currency?.symbol ?? '₹'
-        : '₹';
-    final code = appCtrl.walletList.isNotEmpty
-        ? appCtrl.walletList[0].currency?.code ?? 'INR'
-        : 'INR';
-    final balanceVal = double.tryParse(balance.replaceAll(',', '')) ?? 0;
-
-    return GestureDetector(
-      onTap: () => Get.toNamed(RoutesName.customerUdharMerchantsScreen),
-      child: Container(
-        width: double.infinity,
-        height: 200.h,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.r),
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xff0D2247),
-              Color(0xff1B3A6B),
-              Color(0xff1E4E8C),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0xff1B3A6B).withValues(alpha: .45),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+  Widget _buildTransactionItem({
+    required String title,
+    required String date,
+    required String amount,
+    required String statusText,
+    required bool isPositive,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    final bool isDark = Get.isDarkMode;
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCardColor : Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: isDark ? Colors.white12 : AppColors.cardBorderColor,
         ),
-        child: Stack(
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44.r,
+            height: 44.r,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Center(
+              child: Icon(icon, color: iconColor, size: 22.sp),
+            ),
+          ),
+          HSpace(12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : AppColors.textDarkColor,
+                  ),
+                ),
+                VSpace(3.h),
+                Text(
+                  date,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.textMutedColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                amount,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : AppColors.textDarkColor,
+                ),
+              ),
+              VSpace(2.h),
+              Text(
+                statusText,
+                style: TextStyle(
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: isPositive ? const Color(0xFF16A34A) : const Color(0xFFEA580C),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Drawer ───────────────────────────────────────────────────────────────────
+  Widget buildDrawer(BuildContext context, Map storedLanguage) {
+    final bool isDark = Get.isDarkMode;
+    return Drawer(
+      backgroundColor: isDark ? AppColors.darkBgColor : Colors.white,
+      child: SafeArea(
+        child: Column(
           children: [
-            // ── Background decorative circles
-            Positioned(
-              top: -30.h,
-              right: -20.w,
-              child: Container(
-                width: 130.h,
-                height: 130.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xffF5A623).withValues(alpha: .07),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -40.h,
-              left: -20.w,
-              child: Container(
-                width: 120.h,
-                height: 120.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xffF5A623).withValues(alpha: .05),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 30.h,
-              right: 80.w,
-              child: Container(
-                width: 70.h,
-                height: 70.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: .04),
-                ),
-              ),
-            ),
-            // ── Passbook content
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Row 1: Logo + "UDHAR PASSBOOK" label
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Logo
-                      SizedBox(
-                        height: 36.h,
-                        child: Image.asset(
-                          '$rootImageDir/app_logo.png',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      // Card type badge
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 4.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color(0xffF5A623).withValues(alpha: .15),
-                          borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(
-                            color: Color(0xffF5A623).withValues(alpha: .4),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          'UDHAR PASSBOOK',
-                          style: t.bodySmall?.copyWith(
-                            color: Color(0xffF5A623),
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ),
-                    ],
+            GetBuilder<ProfileController>(
+              builder: (profileCtrl) {
+                return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.mainColor.withValues(alpha: 0.08),
                   ),
-                  VSpace(15.h),
-                  // Row 2: Balance display
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        'Available Balance',
-                        style: t.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: .6),
-                          fontSize: 10.sp,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      Text(
-                        '${balanceVal < 0 ? '-' : (balanceVal > 0 ? '+' : '')}$symbol ${Helpers.numberFormatWithAsFixed2('', balanceVal.abs().toString())} $code',
-                        style: t.titleMedium?.copyWith(
-                          color: balanceVal < 0 ? AppColors.redColor : AppColors.greenColor,
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  // Walkthrough / Call to Action
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 12.w),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.list_alt_rounded,
-                          color: Color(0xffF5A623),
-                          size: 20.sp,
-                        ),
-                        HSpace(10.w),
-                        Expanded(
-                          child: Text(
-                            'Tap to view your merchant-wise assigned virtual cards list',
-                            style: t.bodySmall?.copyWith(
-                              color: Colors.white,
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w500,
+                      _buildAvatarCircle(profileCtrl.userPhoto, size: 56.r),
+                      HSpace(14.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              profileCtrl.userName.isNotEmpty
+                                  ? profileCtrl.userName
+                                  : "Sonu Saini",
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.white : AppColors.textDarkColor,
+                              ),
                             ),
-                          ),
+                            VSpace(2.h),
+                            Text(
+                              profileCtrl.userEmail.isNotEmpty
+                                  ? profileCtrl.userEmail
+                                  : "Customer",
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: AppColors.textMutedColor,
+                              ),
+                            ),
+                          ],
                         ),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          size: 20.sp,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.symmetric(vertical: 10.h),
+                children: [
+                  _buildDrawerTile(
+                    icon: Icons.credit_card_rounded,
+                    title: "My Udhar Cards",
+                    onTap: () => Get.toNamed(RoutesName.customerUdharMerchantsScreen),
+                  ),
+                  _buildDrawerTile(
+                    icon: Icons.history_rounded,
+                    title: "Transactions",
+                    onTap: () => Get.toNamed(RoutesName.transactionScreen),
+                  ),
+                  _buildDrawerTile(
+                    icon: Icons.qr_code_scanner_rounded,
+                    title: "Scan & Pay",
+                    onTap: () => Get.to(() => const MobileScannerScreen(isFromMakePaymentPage: true)),
+                  ),
+                  _buildDrawerTile(
+                    icon: Icons.person_outline_rounded,
+                    title: "My Profile",
+                    onTap: () => Get.toNamed(RoutesName.profileSettingScreen),
+                  ),
+                  _buildDrawerTile(
+                    icon: Icons.support_agent_rounded,
+                    title: "Support",
+                    onTap: () => Get.toNamed(RoutesName.supportTicketListScreen),
                   ),
                 ],
               ),
@@ -430,712 +814,26 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  onCategoryTapped(cateName) {
-    switch (cateName) {
-      case "Deposit":
-        Get.toNamed(RoutesName.depositScreen);
-      case "Withdraw":
-        Get.toNamed(RoutesName.withdrawScreen);
-      case "Send Money":
-        Get.toNamed(RoutesName.sendMoneyScreen);
-      case "Request Money":
-        Get.toNamed(RoutesName.requestMoneyScreen);
-      case "Exchange Money":
-        Get.toNamed(RoutesName.exchangeScreen);
-      case "Redeem":
-        Get.toNamed(RoutesName.redeemScreen);
-      case "Escrow":
-        Get.toNamed(RoutesName.escrowScreen);
-      case "Transaction":
-        Get.toNamed(RoutesName.transactionScreen);
-      case "Dispute":
-        Get.toNamed(RoutesName.disputeHistoryScreen);
-      case "QR Payment":
-        Get.toNamed(RoutesName.qrPaymentScreen);
-      case "Voucher":
-        Get.toNamed(RoutesName.voucherScreen);
-      case "Invoice":
-        Get.toNamed(RoutesName.invoiceScreen);
-      case "Pay Bill":
-        Get.toNamed(RoutesName.billCategoryScreen);
-      case "Support Ticket":
-        Get.toNamed(RoutesName.supportTicketListScreen);
-      default:
-        Get.offAllNamed(RoutesName.bottomNavBar);
-    }
-  }
-
-  Widget buildContainer(
-    TextTheme t, [
-    Color? bgColor,
-    String? img,
-    String? currency,
-    String? amout,
-  ]) {
-    return Container(
-      padding: EdgeInsets.only(
-        top: 20.h,
-        left: 16.h,
-        bottom: 16.h,
-        right: 16.h,
-      ),
-      height: 134.h,
-      decoration: BoxDecoration(
-        color: bgColor ?? AppColors.dollerColor.withValues(alpha: .1),
-        borderRadius: Dimensions.kBorderRadius * 2,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.asset(
-            img ?? "$rootImageDir/doller.webp",
-            height: 36.h,
-            width: 36.h,
-            fit: BoxFit.cover,
-          ),
-          VSpace(5.h),
-          Text(
-            currency ?? "Us Dollar",
-            style: t.bodySmall?.copyWith(
-              fontSize: 14.sp,
-              color: AppThemes.getIconBlackColor(),
-            ),
-          ),
-          Text(
-            amout ?? "\$7468.28",
-            maxLines: 2,
-            style: t.bodyMedium?.copyWith(fontSize: 16.sp),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildAccountsLoader() {
-    return SizedBox(
-      height: 200.h,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        itemBuilder: (context, i) {
-          return Container(
-            height: 200.h,
-            width: 250.w,
-            margin: EdgeInsets.only(right: 20.h),
-            decoration: BoxDecoration(
-              color:
-                  Get.isDarkMode
-                      ? AppColors.darkCardColor
-                      : AppColors.whiteColor,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                VSpace(10.h),
-                Row(
-                  children: [
-                    Container(
-                      width: 32.h,
-                      height: 32.h,
-                      margin: EdgeInsets.only(left: 8.w),
-                      padding: EdgeInsets.all(10.h),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color:
-                            Get.isDarkMode
-                                ? AppColors.darkBgColor
-                                : AppColors.fillColorColor,
-                      ),
-                    ),
-                    Spacer(),
-                    Container(
-                      width: 5.w,
-                      height: 25.h,
-                      margin: EdgeInsets.only(right: 20.w),
-                      padding: EdgeInsets.all(10.h),
-                      decoration: BoxDecoration(
-                        color:
-                            Get.isDarkMode
-                                ? AppColors.darkBgColor
-                                : AppColors.fillColorColor,
-                      ),
-                    ),
-                  ],
-                ),
-                VSpace(25.h),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 80.w,
-                      height: 15.h,
-                      margin: EdgeInsets.only(left: 8.w),
-                      padding: EdgeInsets.all(10.h),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4.r),
-                        color:
-                            Get.isDarkMode
-                                ? AppColors.darkBgColor
-                                : AppColors.fillColorColor,
-                      ),
-                    ),
-                    VSpace(6.w),
-                    Container(
-                      width: 150.w,
-                      height: 25.h,
-                      margin: EdgeInsets.only(left: 8.w),
-                      padding: EdgeInsets.all(10.h),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4.r),
-                        color:
-                            Get.isDarkMode
-                                ? AppColors.darkBgColor
-                                : AppColors.fillColorColor,
-                      ),
-                    ),
-                  ],
-                ),
-                Spacer(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 80.w,
-                      height: 15.h,
-                      margin: EdgeInsets.only(left: 8.w),
-                      padding: EdgeInsets.all(10.h),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4.r),
-                        color:
-                            Get.isDarkMode
-                                ? AppColors.darkBgColor
-                                : AppColors.fillColorColor,
-                      ),
-                    ),
-                    VSpace(6.w),
-                    Container(
-                      width: 170.w,
-                      height: 25.h,
-                      margin: EdgeInsets.only(left: 8.w),
-                      padding: EdgeInsets.all(10.h),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4.r),
-                        color:
-                            Get.isDarkMode
-                                ? AppColors.darkBgColor
-                                : AppColors.fillColorColor,
-                      ),
-                    ),
-                  ],
-                ),
-                VSpace(15.h),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget buildDrawer(BuildContext context, storedLanguage) {
-    Color lightenColor(Color color, [double amount = 0.1]) {
-      assert(amount >= 0 && amount <= 1, 'Amount should be between 0 and 1');
-      final hsl = HSLColor.fromColor(color);
-      final hslLightened = hsl.withLightness(
-        (hsl.lightness + amount).clamp(0.0, 1.0),
-      );
-      return hslLightened.toColor();
-    }
-
-    return Drawer(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      child: Padding(
-        padding: EdgeInsets.only(right: 60.w),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              top: 0,
-              bottom: 0,
-              right: 0,
-              child: Image.asset(
-                "$rootImageDir/drawer_bg_right.webp",
-                color: AppColors.mainColor,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              child: Image.asset(
-                "$rootImageDir/drawer_bg_left.webp",
-                color: lightenColor(AppColors.mainColor, 0.05),
-                width: context.mQuery.width * .6,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GetBuilder<ProfileController>(
-                  builder: (profileController) {
-                    return SizedBox(
-                      height: 240.h,
-                      child: Column(
-                        children: [
-                          VSpace(90.h),
-                          SizedBox(
-                            height: 110.h,
-                            width: context.mQuery.width * .58,
-                            child: Stack(
-                              alignment: Alignment.centerLeft,
-                              clipBehavior: Clip.none,
-                              children: [
-                                Positioned(
-                                  right: -60.w,
-                                  child: Container(
-                                    height: 120.h,
-                                    width: 120.h,
-                                    padding: EdgeInsets.all(20.h),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.mainColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Container(
-                                      height: 80.h,
-                                      width: 80.h,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: AppColors.imageBgColor,
-                                        image:
-                                            profileController.isLoading ||
-                                                    profileController
-                                                            .userPhoto ==
-                                                        ''
-                                                ? DecorationImage(
-                                                  image: AssetImage(
-                                                    "$rootImageDir/avatar.webp",
-                                                  ),
-                                                  fit: BoxFit.cover,
-                                                )
-                                                : DecorationImage(
-                                                  image:
-                                                      CachedNetworkImageProvider(
-                                                        profileController
-                                                            .userPhoto,
-                                                      ),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(left: 24.w),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        VSpace(30.h),
-                                        Text(
-                                          profileController.isLoading
-                                              ? ""
-                                              : profileController.userName,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: context.t.bodyLarge?.copyWith(
-                                            fontSize: 20.sp,
-                                            color: AppColors.whiteColor,
-                                          ),
-                                        ),
-                                        VSpace(5.h),
-                                        Text(
-                                          profileController.isLoading
-                                              ? ""
-                                              : profileController.userEmail,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: context.t.displayMedium
-                                              ?.copyWith(
-                                                fontSize: 16.sp,
-                                                color: AppColors.whiteColor,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].request
-                                    .toString() ==
-                                '1')
-                          expansionTileWidget(
-                            context,
-                            isCollapsed: isCollapsed1,
-                            img: '$rootImageDir/request-money.webp',
-                            categoryName:
-                                storedLanguage['Request Money'] ??
-                                'Request Money',
-                            subCategoryList: ['New Request', 'All Request'],
-                            onTap: (v) {
-                              if (v == 'New Request') {
-                                Get.toNamed(RoutesName.requestMoneyScreen);
-                              } else {
-                                Get.toNamed(
-                                  RoutesName.requestMoneyHistoryScreen,
-                                );
-                              }
-                            },
-                            onExpansionChanged: (v) {
-                              setState(() {
-                                isCollapsed1 = v;
-                              });
-                            },
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].exchange
-                                    .toString() ==
-                                '1')
-                          expansionTileWidget(
-                            context,
-                            isCollapsed: isCollapsed2,
-                            img: '$rootImageDir/exchange_money.webp',
-                            categoryName:
-                                storedLanguage['Exchange Money'] ??
-                                'Exchange Money',
-                            subCategoryList: ['Exchange', 'All Exchange'],
-                            onTap: (v) {
-                              if (v == 'Exchange') {
-                                Get.toNamed(RoutesName.exchangeScreen);
-                              } else {
-                                Get.toNamed(
-                                  RoutesName.exchangeMoneyHistoryScreen,
-                                );
-                              }
-                            },
-                            onExpansionChanged: (v) {
-                              setState(() {
-                                isCollapsed2 = v;
-                              });
-                            },
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].redeem
-                                    .toString() ==
-                                '1')
-                          expansionTileWidget(
-                            context,
-                            isCollapsed: isCollapsed3,
-                            img: '$rootImageDir/redeem.webp',
-                            categoryName: storedLanguage['Redeem'] ?? 'Redeem',
-                            subCategoryList: [
-                              'Generate New Code',
-                              'Generated List',
-                              'Insert Redeem Code',
-                            ],
-                            onTap: (v) {
-                              if (v == 'Generate New Code') {
-                                Get.toNamed(RoutesName.redeemScreen);
-                              } else if (v == 'Generated List') {
-                                Get.toNamed(RoutesName.redeemHistoryScreen);
-                              } else {
-                                Get.toNamed(RoutesName.insertRedeemCodeScreen);
-                              }
-                            },
-                            onExpansionChanged: (v) {
-                              setState(() {
-                                isCollapsed3 = v;
-                              });
-                            },
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].make_payment
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.makePaymentScreen);
-                            },
-                            img: "$rootImageDir/make-payment.webp",
-                            name:
-                                storedLanguage['Make Payment'] ??
-                                'Make Payment',
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].cash_out
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.cashoutScreen);
-                            },
-                            img: "$rootImageDir/cash-out.webp",
-                            name: storedLanguage['Cash Out'] ?? 'Cash Out',
-                          ),
-
-                        buildTile(
-                          context,
-                          onTap: () {
-                            Get.toNamed(RoutesName.securityPinSetupScreen);
-                          },
-                          img: "$rootImageDir/pin.webp",
-                          name: storedLanguage['Reset Pin'] ?? 'Reset Pin',
-                        ),
-                        buildTile(
-                          context,
-                          onTap: () {
-                            Get.toNamed(RoutesName.profileSettingScreen);
-                          },
-                          img: "$rootImageDir/person.webp",
-                          name: storedLanguage['Profile'] ?? 'Profile',
-                        ),
-                        buildTile(
-                          context,
-                          onTap: () {
-                            Get.toNamed(RoutesName.supportTicketListScreen);
-                          },
-                          img: "$rootImageDir/support.webp",
-                          name: storedLanguage['Support Tickets'] ?? 'Support Tickets',
-                        ),
-                        buildTile(
-                          context,
-                          onTap: () {
-                            Get.toNamed(RoutesName.notificationScreen);
-                          },
-                          img: "$rootImageDir/notification.webp",
-                          name: storedLanguage['Notifications'] ?? 'Notifications',
-                        ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].deposit
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.depositHistoryScreen);
-                            },
-                            img: "$rootImageDir/add_fund.webp",
-                            name:
-                                storedLanguage['Deposit History'] ??
-                                'Deposit History',
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].payout
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.withdrawHistoryScreen);
-                            },
-                            img: "$rootImageDir/payout.webp",
-                            name:
-                                storedLanguage['Withdraw History'] ??
-                                'Withdraw History',
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].transfer
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.sendMoneyHistoryScreen);
-                            },
-                            img: "$rootImageDir/money_transfer.webp",
-                            name:
-                                storedLanguage['Transfer History'] ??
-                                'Transfer History',
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].escrow
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.escrowHistoryScreen);
-                            },
-                            img: "$rootImageDir/escrow.webp",
-                            name:
-                                storedLanguage['Escrow History'] ??
-                                'Escrow History',
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].voucher
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.voucherHistoryScreen);
-                            },
-                            img: "$rootImageDir/voucher.webp",
-                            name:
-                                storedLanguage['Voucher History'] ??
-                                'Voucher History',
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].invoice
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.invoiceHistoryScreen);
-                            },
-                            img: "$rootImageDir/invoice.webp",
-                            name:
-                                storedLanguage['Invoice History'] ??
-                                'Invoice History',
-                          ),
-                        if (AppController.to.basicCtrlList.isNotEmpty &&
-                            AppController.to.basicCtrlList[0].billPayment
-                                    .toString() ==
-                                '1')
-                          buildTile(
-                            context,
-                            onTap: () {
-                              Get.toNamed(RoutesName.payBillHistoryScreen);
-                            },
-                            img: "$rootImageDir/pay_bill.webp",
-                            name:
-                                storedLanguage['Pay History'] ?? 'Pay History',
-                          ),
-                        VSpace(60.h),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  ExpansionTile expansionTileWidget(
-    BuildContext context, {
-    required String img,
-    required String categoryName,
-    required List<String> subCategoryList,
-    required Function(String) onTap,
-    void Function(bool)? onExpansionChanged,
-    required bool isCollapsed,
-  }) {
-    return ExpansionTile(
-      shape: const RoundedRectangleBorder(),
-      tilePadding: EdgeInsets.zero,
-      childrenPadding: const EdgeInsets.all(0),
-      iconColor: AppThemes.getIconBlackColor(),
-      title: Row(
-        children: [
-          HSpace(18.w),
-          SizedBox(
-            width: 18.w,
-            height: 18.w,
-            child: Image.asset(
-              img,
-              color: AppColors.whiteColor,
-              fit: BoxFit.cover,
-            ),
-          ),
-          HSpace(27.w),
-          Text(
-            categoryName,
-            style: context.t.bodyMedium?.copyWith(
-              fontSize: 18.sp,
-              color: AppColors.whiteColor,
-            ),
-          ),
-        ],
-      ),
-      trailing:
-          isCollapsed
-              ? Padding(
-                padding: EdgeInsets.only(right: 15.w),
-                child: const Icon(
-                  Icons.arrow_drop_up,
-                  color: AppColors.whiteColor,
-                ),
-              )
-              : Padding(
-                padding: EdgeInsets.only(right: 15.w),
-                child: const Icon(
-                  Icons.arrow_drop_down,
-                  color: AppColors.whiteColor,
-                ),
-              ),
-      onExpansionChanged: onExpansionChanged,
-      children:
-          subCategoryList
-              .map(
-                (e) => SizedBox(
-                  height: 40,
-                  child: ListTile(
-                    onTap: () => onTap(e),
-                    contentPadding: EdgeInsets.only(left: 65.w),
-                    title: Text(
-                      e,
-                      style: context.t.bodySmall?.copyWith(
-                        fontSize: 16.sp,
-                        color: AppColors.whiteColor,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-    );
-  }
-
-  ListTile buildTile(
-    BuildContext context, {
-    required String name,
-    required String img,
-    void Function()? onTap,
+  Widget _buildDrawerTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
   }) {
     return ListTile(
-      onTap: onTap,
-      leading: SizedBox(
-        width: 18.w,
-        height: 18.w,
-        child: Image.asset(img, color: AppColors.whiteColor, fit: BoxFit.cover),
-      ),
+      leading: Icon(icon, color: AppColors.mainColor, size: 22.sp),
       title: Text(
-        name,
-        style: context.t.bodyMedium?.copyWith(
-          fontSize: 18.sp,
-          color: AppColors.whiteColor,
+        title,
+        style: TextStyle(
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w500,
         ),
       ),
+      trailing: Icon(Icons.chevron_right_rounded, size: 20.sp),
+      onTap: onTap,
     );
   }
 }
 
-
-// 1+ 1(design+project)+
 Widget buildTransactionLoader({
   int? itemCount = 5,
   bool? isReverseColor = false,
@@ -1150,14 +848,12 @@ Widget buildTransactionLoader({
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color:
-              isReverseColor == true
-                  ? AppThemes.getFillColor()
-                  : AppThemes.getDarkCardColor(),
-          borderRadius: Dimensions.kBorderRadius,
+          color: isReverseColor == true
+              ? const Color(0xFFF1F5F9)
+              : (Get.isDarkMode ? AppColors.darkCardColor : Colors.white),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: AppThemes.borderColor(),
-            width: Dimensions.appThinBorder,
+            color: Get.isDarkMode ? Colors.white12 : AppColors.cardBorderColor,
           ),
         ),
         child: Row(
@@ -1165,18 +861,14 @@ Widget buildTransactionLoader({
             Container(
               width: 40.h,
               height: 40.h,
-              padding: EdgeInsets.all(10.h),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12.r),
-                color:
-                    Get.isDarkMode
-                        ? AppColors.darkBgColor
-                        : isReverseColor == true
-                        ? AppColors.whiteColor
-                        : AppColors.fillColorColor,
+                color: Get.isDarkMode
+                    ? AppColors.darkBgColor
+                    : const Color(0xFFE2E8F0),
               ),
             ),
-            HSpace(10.w),
+            SizedBox(width: 10.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1185,26 +877,20 @@ Widget buildTransactionLoader({
                     height: 10.h,
                     width: double.maxFinite,
                     decoration: BoxDecoration(
-                      color:
-                          Get.isDarkMode
-                              ? AppColors.darkBgColor
-                              : isReverseColor == true
-                              ? AppColors.whiteColor
-                              : AppColors.fillColorColor,
+                      color: Get.isDarkMode
+                          ? AppColors.darkBgColor
+                          : const Color(0xFFE2E8F0),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
-                  VSpace(5.h),
+                  SizedBox(height: 5.h),
                   Container(
                     height: 10.h,
                     width: 100.w,
                     decoration: BoxDecoration(
-                      color:
-                          Get.isDarkMode
-                              ? AppColors.darkBgColor
-                              : isReverseColor == true
-                              ? AppColors.whiteColor
-                              : AppColors.fillColorColor,
+                      color: Get.isDarkMode
+                          ? AppColors.darkBgColor
+                          : const Color(0xFFE2E8F0),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
@@ -1217,6 +903,4 @@ Widget buildTransactionLoader({
     },
   );
 }
-
-// ── SIM Chip painter for the virtual card ────────────────────────────────────
 
